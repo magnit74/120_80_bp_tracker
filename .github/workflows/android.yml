@@ -34,19 +34,25 @@ jobs:
       - name: 5. Run Expo Prebuild (Clean Native Code)
         run: npx expo prebuild -p android
 
-      - name: 6. Build Release APK & AAB
+      - name: 6. Configure High-Performance Gradle Memory
+        run: |
+          echo "org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+UseG1GC" >> android/gradle.properties
+          echo "org.gradle.parallel=true" >> android/gradle.properties
+          echo "org.gradle.caching=true" >> android/gradle.properties
+
+      - name: 7. Build Release APK & AAB (No Daemon for CI)
         working-directory: ./android
         run: |
           chmod +x gradlew
-          ./gradlew assembleRelease bundleRelease
+          ./gradlew assembleRelease bundleRelease --no-daemon
 
-      - name: 7. Upload APK Artifact
+      - name: 8. Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
           path: android/app/build/outputs/apk/release/*.apk
 
-      - name: 8. Upload AAB Artifact
+      - name: 9. Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab
