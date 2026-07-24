@@ -27,21 +27,14 @@ export const PrimaryButton: React.FC<PrimaryButtonProps> = ({ title, style, disa
 const styles = StyleSheet.create({
   button: {
     backgroundColor: colors.primary,
-    paddingVertical: 18,
+    paddingVertical: 20,
     paddingHorizontal: 32,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 6,
   },
   disabled: {
     backgroundColor: colors.border,
-    shadowOpacity: 0,
-    elevation: 0,
   },
   text: {
     ...typography.button,

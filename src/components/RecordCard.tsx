@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TouchableOpacityProps } from 'react-native';
 import { colors } from '../theme/colors';
+import { HeartPulseIcon } from './Icons';
 
 export interface RecordCardProps extends TouchableOpacityProps {
   systolic: number;
@@ -52,7 +53,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({
       <View style={styles.bottomRow}>
         <View style={styles.pulseSection}>
           <View style={styles.pulseIcon}>
-            <Text style={styles.pulseIconText}>♥</Text>
+            <HeartPulseIcon size={14} color="#E85D75" />
           </View>
           <Text style={styles.pulseValue}>{pulse}</Text>
           <Text style={styles.pulseUnit}>bpm</Text>
@@ -68,13 +69,10 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: 20,
-    marginBottom: 14,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 4,
+    marginBottom: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
   },
   topRow: {
     flexDirection: 'row',
@@ -88,21 +86,23 @@ const styles = StyleSheet.create({
   },
   bpNumber: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 42,
+    fontSize: 56,
     color: colors.textDark,
-    letterSpacing: -1,
+    letterSpacing: -2,
+    lineHeight: 60,
   },
   bpSlash: {
     fontFamily: 'Inter_300Light',
-    fontSize: 32,
+    fontSize: 42,
     color: colors.textLight,
     marginHorizontal: 4,
   },
   bpDiastolic: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 42,
+    fontSize: 56,
     color: colors.textDark,
-    letterSpacing: -1,
+    letterSpacing: -2,
+    lineHeight: 60,
   },
   bpUnit: {
     fontFamily: 'Inter_400Regular',
@@ -138,15 +138,12 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   pulseIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: '#FFE5E5',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  pulseIconText: {
-    fontSize: 12,
   },
   pulseValue: {
     fontFamily: 'Inter_600SemiBold',

@@ -1,9 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable } from 'react-native';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { BloodPressureWidget } from '../../widgets/BloodPressureWidget';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { RecordCard } from '../components/RecordCard';
@@ -25,6 +26,7 @@ const getBPStatus = (sys: number, dia: number) => {
 
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
+  const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,6 +37,16 @@ export const HomeScreen = () => {
       loadRecords();
     }, [])
   );
+
+  useEffect(() => {
+    if (todayLatest) {
+      BloodPressureWidget.updateSnapshot({
+        systolic: todayLatest.systolic,
+        diastolic: todayLatest.diastolic,
+        status: getBPStatus(todayLatest.systolic, todayLatest.diastolic).label
+      });
+    }
+  }, [todayLatest]);
 
   const loadRecords = async () => {
     try {
@@ -188,6 +200,18 @@ export const HomeScreen = () => {
           <CallOfferCard />
         </Animated.View>
 
+        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={{ marginTop: 16 }}>
+          <View style={styles.widgetBanner}>
+            <View style={styles.widgetIconContainer}>
+              <HeartPulseIcon size={24} color={colors.primary} />
+            </View>
+            <View style={styles.widgetTextContainer}>
+              <Text style={styles.widgetBannerTitle}>Home Screen Widget</Text>
+              <Text style={styles.widgetBannerDesc}>Add our widget to your home screen for one-tap tracking.</Text>
+            </View>
+          </View>
+        </Animated.View>
+
         {showRatingPrompt && (
           <Animated.View entering={FadeInDown.delay(350).duration(400)} style={{ marginTop: 16 }}>
             <RatingPrompt
@@ -285,27 +309,17 @@ const styles = StyleSheet.create({
     flex: 1.8,
     backgroundColor: colors.white,
     borderRadius: 16,
-    padding: 14,
+    padding: 20,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: colors.borderLight,
   },
   hrCard: {
     flex: 1,
     backgroundColor: colors.white,
     borderRadius: 16,
-    padding: 14,
+    padding: 20,
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: colors.borderLight,
   },
   bpRow: {
     flexDirection: 'row',
@@ -314,9 +328,9 @@ const styles = StyleSheet.create({
   },
   bpNumber: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 32,
+    fontSize: 42,
     color: colors.textDark,
-    letterSpacing: -1,
+    letterSpacing: -1.5,
   },
   bpSlash: {
     fontFamily: 'Inter_300Light',
@@ -346,9 +360,9 @@ const styles = StyleSheet.create({
   },
   hrNumber: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 32,
+    fontSize: 42,
     color: colors.textDark,
-    letterSpacing: -1,
+    letterSpacing: -1.5,
   },
   hrIcon: {
     fontSize: 16,
@@ -393,15 +407,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
     borderRadius: 14,
-    padding: 12,
+    padding: 16,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
+    borderColor: colors.borderLight,
   },
   tipIconCircle: {
     width: 36,
@@ -448,5 +457,38 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase' as const,
     marginBottom: 12,
+  },
+  widgetBanner: {
+    flexDirection: 'row',
+    backgroundColor: colors.white,
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  widgetIconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#E8F5F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 14,
+  },
+  widgetTextContainer: {
+    flex: 1,
+  },
+  widgetBannerTitle: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
+    color: colors.textDark,
+    marginBottom: 4,
+  },
+  widgetBannerDesc: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textMedium,
+    lineHeight: 18,
   },
 });
