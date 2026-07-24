@@ -31,6 +31,10 @@ export const AddEntryScreen = () => {
   const [step, setStep] = useState<'sys' | 'dia' | 'pul'>('sys');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  
+  // 3-Minute Preparation Timer removed per user request
+  const [timerSeconds, setTimerSeconds] = useState(180);
+  const [isTimerActive, setIsTimerActive] = useState(false);
 
   const activePulse = useSharedValue(1);
   const saveCheckScale = useSharedValue(0);
@@ -47,6 +51,18 @@ export const AddEntryScreen = () => {
     );
     return () => cancelAnimation(activePulse);
   }, []);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerActive && timerSeconds > 0) {
+      interval = setInterval(() => {
+        setTimerSeconds(prev => prev - 1);
+      }, 1000);
+    } else if (timerSeconds === 0) {
+      setIsTimerActive(false);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerActive, timerSeconds]);
 
   useEffect(() => {
     if (saveState === 'saved') {
@@ -153,6 +169,35 @@ export const AddEntryScreen = () => {
           Reading Logged
         </Animated.Text>
       </View>
+    );
+  }
+
+  if (isTimerActive) {
+    const minutes = Math.floor(timerSeconds / 60);
+    const seconds = timerSeconds % 60;
+    
+    return (
+      <Animated.View style={styles.timerContainer} entering={FadeIn.duration(300)}>
+        <View style={styles.timerHeader}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Text style={styles.backButtonText}>X</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.timerContent}>
+          <Animated.View style={[styles.timerCircle, { transform: [{ scale: activePulse }] }]}>
+            <Text style={styles.timerClock}>{minutes}:{seconds.toString().padStart(2, '0')}</Text>
+          </Animated.View>
+          <Text style={styles.timerTitle}>Rest & Breathe</Text>
+          <Text style={styles.timerSubtitle}>AHA guidelines recommend resting for 3-5 minutes before taking your blood pressure for accurate results.</Text>
+          
+          <TouchableOpacity 
+            style={styles.skipButton}
+            onPress={() => setIsTimerActive(false)}
+          >
+            <Text style={styles.skipButtonText}>Skip Preparation</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     );
   }
 
@@ -452,5 +497,67 @@ const styles = StyleSheet.create({
   savedText: {
     ...typography.h2,
     color: colors.textDark,
+  },
+  timerContainer: {
+    flex: 1,
+    backgroundColor: '#0F172A',
+  },
+  timerHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 56,
+  },
+  timerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+  },
+  timerCircle: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    borderWidth: 2,
+    borderColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 40,
+    shadowColor: '#3B82F6',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 30,
+    elevation: 10,
+  },
+  timerClock: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 48,
+    color: '#60A5FA',
+    letterSpacing: 2,
+  },
+  timerTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 28,
+    color: colors.white,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  timerSubtitle: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 16,
+    color: '#94A3B8',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 60,
+  },
+  skipButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  skipButtonText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#64748B',
   },
 });
