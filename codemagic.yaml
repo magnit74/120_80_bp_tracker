@@ -18,10 +18,9 @@ workflows:
         script: xcode-project use-profiles --project ios/*.xcodeproj
       - name: Build iOS IPA
         script: |
-          # Codemagic автоматически найдет xcworkspace и scheme
           xcode-project build-ipa \
-            --workspace $(find ios -name "*.xcworkspace" | head -n 1) \
-            --scheme "bptracker"
+            --workspace ios/12080BPTracker.xcworkspace \
+            --scheme 12080BPTracker
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
