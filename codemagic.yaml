@@ -6,6 +6,8 @@ workflows:
     integrations:
       app_store_connect: Globalkey
     environment:
+      groups:
+        - ios_credentials
       node: latest
       xcode: latest
       cocoapods: default
