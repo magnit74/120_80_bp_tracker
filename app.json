@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "120/80 BP Tracker",
+    "slug": "slava-go",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/icon.png",
+      "backgroundColor": "#FAF3E0"
+    },
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.magnit74.bptracker",
+      "buildNumber": "15",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#FAF3E0"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.bloodpressure.tracker.bp.monitor",
+      "versionCode": 1,
+      "googleServicesFile": "./google-services.json"
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/analytics",
+      "@react-native-firebase/crashlytics",
+      "@react-native-community/datetimepicker"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "40d7b6eb-b18e-4e70-a7a0-db5c065ed4cf"
+      }
+    },
+    "owner": "slavagos-team"
+  }
+}

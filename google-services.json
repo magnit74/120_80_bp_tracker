@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "680388174636",
+    "project_id": "project-2592497661654187661",
+    "storage_bucket": "project-2592497661654187661.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:680388174636:android:fc7c88ae27b731f7df4289",
+        "android_client_info": {
+          "package_name": "com.bloodpressure.tracker.bp.monitor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAjO2nrKu4dM_9FBVafrHewH2YKy85Tnq0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
