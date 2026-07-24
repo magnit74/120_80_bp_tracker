@@ -4,7 +4,7 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     integrations:
-      app_store_connect: Codemagic
+      app_store_connect: Globalkey
     environment:
       node: latest
       xcode: latest
@@ -15,7 +15,7 @@ workflows:
       - name: Generate Native iOS code (Expo Prebuild)
         script: npx expo prebuild --platform ios --clean
       - name: Set up iOS code signing
-        script: xcode-project use-profiles
+        script: xcode-project use-profiles --project ios/*.xcodeproj
       - name: Build iOS IPA
         script: |
           # Codemagic автоматически найдет xcworkspace и scheme
