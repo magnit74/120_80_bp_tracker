@@ -4,7 +4,11 @@ workflows:
     max_build_duration: 120
     instance_type: mac_mini_m1
     integrations:
-      app_store_connect: Codemagic # Это имя интеграции Apple Developer, которую вы настроите в UI Codemagic
+      app_store_connect:
+        auth:
+          issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+          key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+          private_key: $APP_STORE_CONNECT_PRIVATE_KEY
     environment:
       node: latest
       xcode: latest
