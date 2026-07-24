@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Modal, Pressable, Platform, Dimensions } from 'react-native';
-import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import { View, Text, StyleSheet, Modal, Pressable, Platform, Dimensions, TouchableOpacity, Vibration } from 'react-native';
+import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { colors } from '../theme/colors';
 import { HeartPulseIcon, ShieldIcon, ChartIcon } from './Icons';
 
@@ -9,12 +9,54 @@ interface Props {
   onClose: () => void;
 }
 
-const { height } = Dimensions.get('window');
-
 export const WidgetInstructionModal = ({ visible, onClose }: Props) => {
   const [step, setStep] = useState(1);
 
   if (!visible) return null;
+
+  const handleNext = () => {
+    Vibration.vibrate(15);
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      setStep(1);
+      onClose();
+    }
+  };
+
+  const renderContent = () => {
+    if (step === 1) {
+      return (
+        <Animated.View key="step1" entering={FadeIn} exiting={FadeOut} style={styles.stepContent}>
+          <View style={styles.iconCircle}>
+            <HeartPulseIcon size={40} color={colors.primary} />
+          </View>
+          <Text style={styles.stepTitle}>Long Press Home Screen</Text>
+          <Text style={styles.stepDesc}>Go to your phone's home screen and long press on an empty space.</Text>
+        </Animated.View>
+      );
+    }
+    if (step === 2) {
+      return (
+        <Animated.View key="step2" entering={FadeIn} exiting={FadeOut} style={styles.stepContent}>
+          <View style={styles.iconCircle}>
+            <ChartIcon size={40} color={colors.primary} />
+          </View>
+          <Text style={styles.stepTitle}>Select "Widgets"</Text>
+          <Text style={styles.stepDesc}>Look for the Widgets menu at the bottom of your screen.</Text>
+        </Animated.View>
+      );
+    }
+    return (
+      <Animated.View key="step3" entering={FadeIn} exiting={FadeOut} style={styles.stepContent}>
+        <View style={styles.iconCircle}>
+          <ShieldIcon size={40} color={colors.primary} />
+        </View>
+        <Text style={styles.stepTitle}>Find 120/80 BP</Text>
+        <Text style={styles.stepDesc}>Scroll down to 120/80 BP Tracker, hold the widget, and drag it to your screen.</Text>
+      </Animated.View>
+    );
+  };
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
@@ -27,48 +69,16 @@ export const WidgetInstructionModal = ({ visible, onClose }: Props) => {
           <Text style={styles.title}>Add the Widget</Text>
           
           <View style={styles.stepsContainer}>
-            {step === 1 && (
-              <Animated.View entering={FadeIn} style={styles.stepContent}>
-                <View style={styles.iconCircle}>
-                  <HeartPulseIcon size={40} color={colors.primary} />
-                </View>
-                <Text style={styles.stepTitle}>Long Press Home Screen</Text>
-                <Text style={styles.stepDesc}>Go to your phone's home screen and long press on an empty space.</Text>
-                
-                <Pressable style={styles.button} onPress={() => setStep(2)}>
-                  <Text style={styles.buttonText}>Next Step</Text>
-                </Pressable>
-              </Animated.View>
-            )}
-
-            {step === 2 && (
-              <Animated.View entering={FadeIn} style={styles.stepContent}>
-                <View style={styles.iconCircle}>
-                  <ChartIcon size={40} color={colors.primary} />
-                </View>
-                <Text style={styles.stepTitle}>Select "Widgets"</Text>
-                <Text style={styles.stepDesc}>Look for the Widgets menu at the bottom of your screen.</Text>
-                
-                <Pressable style={styles.button} onPress={() => setStep(3)}>
-                  <Text style={styles.buttonText}>Next Step</Text>
-                </Pressable>
-              </Animated.View>
-            )}
-
-            {step === 3 && (
-              <Animated.View entering={FadeIn} style={styles.stepContent}>
-                <View style={styles.iconCircle}>
-                  <ShieldIcon size={40} color={colors.primary} />
-                </View>
-                <Text style={styles.stepTitle}>Find 120/80 BP</Text>
-                <Text style={styles.stepDesc}>Scroll down to 120/80 BP Tracker, hold the widget, and drag it to your screen.</Text>
-                
-                <Pressable style={styles.button} onPress={() => { setStep(1); onClose(); }}>
-                  <Text style={styles.buttonText}>Got It!</Text>
-                </Pressable>
-              </Animated.View>
-            )}
+            {renderContent()}
           </View>
+
+          <TouchableOpacity 
+            style={styles.button} 
+            onPress={handleNext}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.buttonText}>{step === 3 ? 'Got It!' : 'Next Step'}</Text>
+          </TouchableOpacity>
           
         </Animated.View>
       </Animated.View>
@@ -92,7 +102,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     paddingTop: 12,
-    minHeight: height * 0.45,
   },
   dragHandle: {
     width: 40,
@@ -110,12 +119,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   stepsContainer: {
-    flex: 1,
     alignItems: 'center',
+    height: 180, // Fixed height to prevent jumping when content changes
+    justifyContent: 'flex-start',
   },
   stepContent: {
     alignItems: 'center',
     width: '100%',
+    position: 'absolute', // Allows smooth crossfading without pushing elements
   },
   iconCircle: {
     width: 80,
@@ -139,7 +150,6 @@ const styles = StyleSheet.create({
     color: colors.textMedium,
     textAlign: 'center',
     lineHeight: 22,
-    marginBottom: 32,
     paddingHorizontal: 10,
   },
   button: {
@@ -148,6 +158,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 14,
     alignItems: 'center',
+    marginTop: 20,
   },
   buttonText: {
     fontFamily: 'Inter_600SemiBold',

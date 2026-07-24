@@ -166,7 +166,9 @@ export const AnalyticsScreen = () => {
                 <h3 style="color: #0F172A; margin: 0 0 8px 0; font-size: 18px;">Track your health with 120/80 BP Tracker</h3>
                 <p style="color: #64748B; margin: 0; font-size: 14px;">Available on Android and iOS. Scan the code to download the app.</p>
               </div>
-              <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://12080bp.app/download" width="80" height="80" style="border-radius: 8px;" />
+              <div style="background-color: #0F766E; padding: 12px; border-radius: 8px; text-align: center;">
+                <span style="color: white; font-weight: bold; font-size: 16px;">12080bp.app/download</span>
+              </div>
             </div>
           </body>
         </html>
