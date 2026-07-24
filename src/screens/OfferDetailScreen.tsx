@@ -62,18 +62,18 @@ export const OfferDetailScreen = () => {
 
         <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.statRow}>
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>$150</Text>
-            <Text style={styles.statLabel}>month cash back</Text>
+            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>$150</Text>
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>month cash back</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>3-5</Text>
-            <Text style={styles.statLabel}>minute call</Text>
+            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>3-5</Text>
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>minute call</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statBox}>
-            <Text style={styles.statNumber}>FREE</Text>
-            <Text style={styles.statLabel}>assessment</Text>
+            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>FREE</Text>
+            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>assessment</Text>
           </View>
         </Animated.View>
 

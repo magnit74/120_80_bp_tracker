@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { requestNotificationPermission, scheduleDailyReminder, cancelReminder } from '../services/notificationService';
 
 import { HomeScreen } from '../screens/HomeScreen';
 import { AddEntryScreen } from '../screens/AddEntryScreen';
@@ -155,20 +156,26 @@ const PushPermissionScreen = () => {
   };
 
   const handleContinue = async () => {
-    const requestFCMPermission = async () => true;
     setIsRequesting(true);
     try {
-      const granted = await requestFCMPermission();
+      const granted = await requestNotificationPermission();
       
       await AsyncStorage.setItem('pushPermissionSeen', 'true');
       await AsyncStorage.setItem('morningReminder', morningEnabled.toString());
       await AsyncStorage.setItem('eveningReminder', eveningEnabled.toString());
       
-      if (morningEnabled) {
+      if (morningEnabled && granted) {
         await AsyncStorage.setItem('morningTime', morningTime.toISOString());
+        await scheduleDailyReminder(morningTime, 'morning_reminder', 'Time for a check-up! 🩺', 'Good morning! Taking a quick blood pressure reading starts your day right.');
+      } else {
+        await cancelReminder('morning_reminder');
       }
-      if (eveningEnabled) {
+      
+      if (eveningEnabled && granted) {
         await AsyncStorage.setItem('eveningTime', eveningTime.toISOString());
+        await scheduleDailyReminder(eveningTime, 'evening_reminder', 'Evening BP Check 🌙', 'Take a moment to record your evening blood pressure for better health tracking.');
+      } else {
+        await cancelReminder('evening_reminder');
       }
 
       if (granted) {
@@ -203,73 +210,14 @@ const PushPermissionScreen = () => {
         </Animated.View>
         
         <Animated.Text entering={FadeInDown.delay(200).duration(400)} style={pushStyles.title}>
-          Stay on Track
+          Don't Forget to Check Your Blood Pressure
         </Animated.Text>
         <Animated.Text entering={FadeInDown.delay(300).duration(400)} style={pushStyles.subtitle}>
-          Consistent tracking helps you and your doctor spot trends. 
-          Set reminders at the times that work best for you.
-        </Animated.Text>
-
-        <Animated.View entering={FadeInDown.delay(400).duration(400)} style={pushStyles.optionsContainer}>
-          <TouchableOpacity 
-            style={[pushStyles.optionCard, morningEnabled && pushStyles.optionCardActive]}
-            onPress={() => setMorningEnabled(!morningEnabled)}
-            activeOpacity={0.7}
-          >
-            <View style={pushStyles.optionLeft}>
-              <View style={[pushStyles.optionIcon, morningEnabled && pushStyles.optionIconActive]}>
-                <SunIcon size={24} color={morningEnabled ? colors.white : colors.primary} />
-              </View>
-              <View style={pushStyles.optionText}>
-                <Text style={pushStyles.optionTitle}>Morning Reminder</Text>
-                <TouchableOpacity onPress={() => setShowPicker('morning')} activeOpacity={0.6}>
-                  <Text style={pushStyles.optionTime}>{formatTime(morningTime)}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={[pushStyles.checkbox, morningEnabled && pushStyles.checkboxActive]}>
-              {morningEnabled && <CheckCircleIcon size={20} color={colors.white} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[pushStyles.optionCard, eveningEnabled && pushStyles.optionCardActive]}
-            onPress={() => setEveningEnabled(!eveningEnabled)}
-            activeOpacity={0.7}
-          >
-            <View style={pushStyles.optionLeft}>
-              <View style={[pushStyles.optionIcon, eveningEnabled && pushStyles.optionIconActive]}>
-                <MoonIcon size={24} color={eveningEnabled ? colors.white : colors.primary} />
-              </View>
-              <View style={pushStyles.optionText}>
-                <Text style={pushStyles.optionTitle}>Evening Reminder</Text>
-                <TouchableOpacity onPress={() => setShowPicker('evening')} activeOpacity={0.6}>
-                  <Text style={pushStyles.optionTime}>{formatTime(eveningTime)}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-            <View style={[pushStyles.checkbox, eveningEnabled && pushStyles.checkboxActive]}>
-              {eveningEnabled && <CheckCircleIcon size={20} color={colors.white} />}
-            </View>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <Animated.Text entering={FadeInDown.delay(500).duration(400)} style={pushStyles.hint}>
-          Tap the time to change it. You can adjust these later in Settings.
+          We'll remind you twice a day (9:00 AM & 8:00 PM) to help you keep a healthy routine.
         </Animated.Text>
       </View>
 
-      {showPicker && (
-        <DateTimePicker
-          value={showPicker === 'morning' ? morningTime : eveningTime}
-          mode="time"
-          is24Hour={false}
-          onChange={handleTimeChange}
-          themeVariant="light"
-        />
-      )}
-
-      <Animated.View entering={FadeInDown.delay(600).duration(400)} style={[pushStyles.footer, { paddingBottom: insets.bottom + 16 }]}>
+      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={[pushStyles.footer, { paddingBottom: insets.bottom + 16 }]}>
         <TouchableOpacity 
           style={[pushStyles.button, isRequesting && pushStyles.buttonDisabled]} 
           onPress={handleContinue}
@@ -277,7 +225,7 @@ const PushPermissionScreen = () => {
           disabled={isRequesting}
         >
           <Text style={pushStyles.buttonText}>
-            {isRequesting ? 'Setting up...' : 'Enable Reminders'}
+            {isRequesting ? 'Setting up...' : 'Turn On Reminders'}
           </Text>
         </TouchableOpacity>
         
@@ -286,7 +234,7 @@ const PushPermissionScreen = () => {
           onPress={handleSkip}
           activeOpacity={0.7}
         >
-          <Text style={pushStyles.skipText}>Maybe Later</Text>
+          <Text style={pushStyles.skipText}>Not Now</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>
