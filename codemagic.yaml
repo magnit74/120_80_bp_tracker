@@ -29,13 +29,6 @@ workflows:
         script: keychain initialize
       - name: Fetch App Store signing files
         script: |
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" > /tmp/AuthKey.p8
-          export APP_STORE_CONNECT_API_KEY_ISSUER_ID=$APP_STORE_CONNECT_ISSUER_ID
-          export APP_STORE_CONNECT_API_KEY_KEY_ID=$APP_STORE_CONNECT_KEY_IDENTIFIER
-          export APP_STORE_CONNECT_API_KEY_KEY_FILEPATH=/tmp/AuthKey.p8
-          fastlane produce group -g "group.com.magnit74.bptracker" -n "12080BPTracker Group" || true
-          fastlane produce associate_group -a "com.magnit74.bptracker" "group.com.magnit74.bptracker" || true
-          fastlane produce associate_group -a "com.magnit74.bptracker.ExpoWidgetsTarget" "group.com.magnit74.bptracker" || true
           app-store-connect fetch-signing-files "com.magnit74.bptracker" --type IOS_APP_STORE --create --delete-stale-profiles
           app-store-connect fetch-signing-files "com.magnit74.bptracker.ExpoWidgetsTarget" --type IOS_APP_STORE --create --delete-stale-profiles
       - name: Add certificates to keychain
