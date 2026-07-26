@@ -1,8 +1,10 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Animated, { FadeIn } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
+import { shadows } from '../theme/shadows';
 import { ShieldIcon } from './Icons';
 
 const BENEFITS = [
@@ -22,36 +24,41 @@ export const HealthBenefitCard = () => {
 
   return (
     <Animated.View entering={FadeIn.delay(300).duration(500)} style={styles.card}>
-      <View style={styles.iconContainer}>
-        <ShieldIcon size={18} color={colors.primary} />
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.title}>HEALTH TIP</Text>
-        <Text style={styles.text}>{BENEFITS[benefitIndex]}</Text>
-      </View>
+      <LinearGradient
+        colors={['#F0FDFA', '#E0F7FA']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.gradient}
+      >
+        <View style={styles.iconContainer}>
+          <ShieldIcon size={22} color={colors.primary} />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>HEALTH TIP</Text>
+          <Text style={styles.text}>{BENEFITS[benefitIndex]}</Text>
+        </View>
+      </LinearGradient>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    ...shadows.md,
+  },
+  gradient: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 16,
+    padding: 18,
     alignItems: 'center',
     gap: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 10,
-    elevation: 2,
   },
   iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: colors.primary + '12',
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.7)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -59,17 +66,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
     color: colors.primary,
-    letterSpacing: 1,
+    letterSpacing: 1.2,
     marginBottom: 4,
     textTransform: 'uppercase' as const,
   },
   text: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 15,
     color: colors.textDark,
-    lineHeight: 18,
+    lineHeight: 22,
   },
 });

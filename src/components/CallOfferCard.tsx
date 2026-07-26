@@ -1,104 +1,147 @@
-﻿import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing, withSequence, withSpring } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
+import { shadows } from '../theme/shadows';
 import { PhoneIcon } from './Icons';
 
 export const CallOfferCard = () => {
   const navigation = useNavigation<any>();
 
   const pulse = useSharedValue(1);
+  const rotation = useSharedValue(0);
+  const cardScale = useSharedValue(1);
 
   useEffect(() => {
     pulse.value = withRepeat(
-      withTiming(1.04, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
+      withTiming(1.08, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
+      -1,
+      true
+    );
+    rotation.value = withRepeat(
+      withSequence(
+        withTiming(-5, { duration: 100 }),
+        withTiming(5, { duration: 100 }),
+        withTiming(-5, { duration: 100 }),
+        withTiming(5, { duration: 100 }),
+        withTiming(0, { duration: 100 }),
+        withTiming(0, { duration: 1500 }) // pause
+      ),
       -1,
       true
     );
   }, []);
 
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { scale: pulse.value },
+      { rotateZ: `${rotation.value}deg` }
+    ],
   }));
+
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: cardScale.value }]
+  }));
+
+  const handlePressIn = useCallback(() => {
+    cardScale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+  }, [cardScale]);
+
+  const handlePressOut = useCallback(() => {
+    cardScale.value = withSpring(1, { damping: 15, stiffness: 300 });
+  }, [cardScale]);
 
   const handlePress = () => {
     navigation.navigate('OfferDetail');
   };
 
   return (
-    <Animated.View entering={FadeInDown.delay(300).duration(500)} style={styles.card}>
-      <TouchableOpacity 
-        style={styles.content}
-        onPress={handlePress}
-        activeOpacity={0.7}
+    <Animated.View entering={FadeInDown.delay(300).duration(500)} style={[styles.card, cardAnimatedStyle]}>
+      <LinearGradient
+        colors={['#ECFDF5', '#F0FDFA']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.cardGradient}
       >
-        <View style={styles.textContainer}>
-          <Text style={styles.badge}>HEALTH BENEFITS</Text>
-          <Text style={styles.title}>Your Readings May Qualify You</Text>
-          <Text style={styles.subtitle}>Special health plans with cash benefits. Check eligibility now.</Text>
-        </View>
-        <Animated.View style={[styles.phoneContainer, pulseStyle]}>
-          <PhoneIcon size={24} color={colors.white} />
-        </Animated.View>
-      </TouchableOpacity>
+        <Pressable 
+          style={styles.content}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onPress={handlePress}
+        >
+          <View style={styles.textContainer}>
+            <Text style={styles.title}>
+              <Text style={{ color: colors.success }}>Free </Text>
+              Benefits Check
+            </Text>
+            <Text style={styles.subtitle}>Your BP readings may qualify you for <Text style={{fontFamily: 'Inter_700Bold', color: colors.success}}>up to $150/mo</Text>. Check now →</Text>
+          </View>
+          <Animated.View style={[styles.phoneContainer, animatedStyle]}>
+            <LinearGradient
+              colors={['#10B981', '#059669']}
+              style={styles.phoneGradient}
+            >
+              <PhoneIcon size={28} color={colors.white} />
+            </LinearGradient>
+          </Animated.View>
+        </Pressable>
+      </LinearGradient>
     </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
     borderRadius: 20,
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 4,
+    overflow: 'hidden',
+    ...shadows.lg,
+  },
+  cardGradient: {
+    borderRadius: 20,
   },
   content: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 18,
+    padding: 20,
     justifyContent: 'space-between',
   },
   textContainer: {
     flex: 1,
     paddingRight: 14,
   },
-  badge: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 10,
-    color: colors.primary,
-    letterSpacing: 1,
-    marginBottom: 6,
-  },
   title: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 19,
     color: colors.textDark,
-    marginBottom: 4,
-    lineHeight: 22,
+    marginBottom: 6,
+    lineHeight: 26,
   },
   subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 15,
     color: colors.textMedium,
-    lineHeight: 18,
+    lineHeight: 22,
   },
   phoneContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.success,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#10B981',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.success,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
+    ...shadows.glow('#10B981', 0.4),
+  },
+  phoneGradient: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

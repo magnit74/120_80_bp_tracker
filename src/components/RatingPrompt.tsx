@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
+import { BlurView } from 'expo-blur';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
 import { StarIcon, StarFilledIcon } from './Icons';
 import { handlePositiveReview, handleNegativeReviewDismiss, sendFeedback } from '../services/reviewService';
@@ -28,6 +30,7 @@ export const RatingPrompt: React.FC<RatingPromptProps> = ({ recordCount, onDismi
   }, [sent, onDismiss]);
 
   const handleStarPress = (stars: number) => {
+    Haptics.selectionAsync();
     setSelectedStars(stars);
   };
 

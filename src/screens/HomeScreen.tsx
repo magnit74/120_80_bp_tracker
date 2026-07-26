@@ -4,9 +4,11 @@ import { useNavigation, useFocusEffect, useIsFocused } from '@react-navigation/n
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { BloodPressureWidget } from '../../widgets/BloodPressureWidget';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
+import { shadows } from '../theme/shadows';
 import { RecordCard } from '../components/RecordCard';
 import { HealthBenefitCard } from '../components/HealthBenefitCard';
 import { CallOfferCard } from '../components/CallOfferCard';
@@ -19,10 +21,18 @@ import { shouldShowReviewPrompt } from '../services/reviewService';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
 const getBPStatus = (sys: number, dia: number) => {
-  // AHA 2017 guidelines
-  if (sys >= 140 || dia >= 90) return { label: 'High', color: colors.danger };
-  if (sys >= 120 || dia >= 80) return { label: 'Elevated', color: colors.warning };
+  // Modified guidelines to allow 120/80 as Normal
+  if (sys >= 140 || dia >= 90) return { label: 'High Stage 2', color: colors.danger };
+  if (sys >= 130 || dia > 80) return { label: 'High Stage 1', color: colors.warning };
+  if (sys > 120) return { label: 'Elevated', color: '#F59E0B' };
   return { label: 'Normal', color: colors.success };
+};
+
+const getHeroGradient = (sys: number, dia: number) => {
+  if (sys >= 140 || dia >= 90) return ['#F3E8FF', '#E0CFFC'];
+  if (sys >= 130 || dia > 80) return ['#FFF0E6', '#FFD6C0'];
+  if (sys > 120) return ['#FFF8E1', '#FFECB3'];
+  return ['#E8FFF5', '#D1FAE5'];
 };
 
 export const HomeScreen = () => {
@@ -120,33 +130,36 @@ export const HomeScreen = () => {
             entering={FadeInDown.delay(150).duration(500)}
             style={styles.heroSection}
           >
-            <View style={styles.lastReadingLabel}>
-              <Text style={styles.lastReadingText}>Last reading</Text>
-              <Text style={styles.lastReadingTime}>{formatFullDate(todayLatest.timestamp)}</Text>
-            </View>
-            
-            <View style={styles.heroCards}>
-              <View style={styles.bpCard}>
-                <View style={styles.bpRow}>
-                  <Text style={styles.bpNumber}>{todayLatest.systolic}</Text>
-                  <Text style={styles.bpSlash}>/</Text>
-                  <Text style={styles.bpNumber}>{todayLatest.diastolic}</Text>
-                </View>
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]} />
+            <LinearGradient 
+              colors={getHeroGradient(todayLatest.systolic, todayLatest.diastolic)}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.heroCard}
+            >
+              <View style={styles.lastReadingLabel}>
+                <View style={[styles.statusPill, { backgroundColor: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color + '25' }]}>
                   <Text style={[styles.statusText, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]}>
                     {getBPStatus(todayLatest.systolic, todayLatest.diastolic).label}
                   </Text>
                 </View>
+                <Text style={styles.lastReadingTime}>{formatFullDate(todayLatest.timestamp)}</Text>
               </View>
               
-              <View style={styles.hrCard}>
-                <View style={styles.hrRow}>
+              <View style={styles.metricsRow}>
+                <View style={styles.bpRow}>
+                  <Text style={[styles.bpNumber, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]}>{todayLatest.systolic}</Text>
+                  <Text style={styles.bpSlash}>/</Text>
+                  <Text style={styles.bpNumberBlack}>{todayLatest.diastolic}</Text>
+                  <Text style={styles.bpUnit}>mmHg</Text>
+                </View>
+                <View style={styles.spacer} />
+                <View style={styles.hrContainer}>
+                  <HeartPulseIcon size={14} color={colors.pulse} />
                   <Text style={styles.hrNumber}>{todayLatest.pulse}</Text>
-                  <Text style={styles.hrIcon}>♥</Text>
+                  <Text style={styles.hrLabel}>bpm</Text>
                 </View>
               </View>
-            </View>
+            </LinearGradient>
           </Animated.View>
         ) : (
           <Animated.View
@@ -186,10 +199,17 @@ export const HomeScreen = () => {
             </View>
 
             <Pressable
-              style={({ pressed }) => [styles.startButton, pressed && { opacity: 0.85 }]}
+              style={({ pressed }) => [styles.startButtonContainer, pressed && { opacity: 0.85 }]}
               onPress={() => (navigation as any).navigate('AddEntry')}
             >
-              <Text style={styles.startButtonText}>Start Tracking</Text>
+              <LinearGradient
+                colors={[colors.gradientStart, colors.gradientEnd]}
+                style={styles.startButton}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <Text style={styles.startButtonText}>Start Tracking</Text>
+              </LinearGradient>
             </Pressable>
           </Animated.View>
         )}
@@ -205,7 +225,7 @@ export const HomeScreen = () => {
         <Animated.View entering={FadeInDown.delay(320).duration(400)} style={{ marginTop: 16 }}>
           <Pressable style={styles.widgetBanner} onPress={() => setIsWidgetModalVisible(true)}>
             <View style={styles.widgetIconContainer}>
-              <HeartPulseIcon size={24} color={colors.primary} />
+              <HeartPulseIcon size={28} color={colors.primary} />
             </View>
             <View style={styles.widgetTextContainer}>
               <Text style={styles.widgetBannerTitle}>Home Screen Widget</Text>
@@ -292,88 +312,84 @@ const styles = StyleSheet.create({
   heroSection: {
     marginBottom: 16,
   },
+  heroCard: {
+    borderRadius: 24,
+    padding: 20,
+    ...shadows.lg,
+  },
   lastReadingLabel: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  lastReadingText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: colors.textDark,
-  },
-  lastReadingTime: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: colors.textLight,
-  },
-  heroCards: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  bpCard: {
-    flex: 1.8,
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  hrCard: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  bpRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    marginBottom: 6,
-  },
-  bpNumber: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 42,
-    color: colors.textDark,
-    letterSpacing: -1.5,
-  },
-  bpSlash: {
-    fontFamily: 'Inter_300Light',
-    fontSize: 24,
-    color: colors.textLight,
-    marginHorizontal: 3,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+  statusPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
   },
   statusText: {
     fontFamily: 'Inter_600SemiBold',
     fontSize: 12,
   },
-  hrRow: {
+  lastReadingTime: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: colors.textLight,
+  },
+  metricsRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  bpRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 5,
+  },
+  bpNumber: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 56,
+    letterSpacing: -3,
+  },
+  bpNumberBlack: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 56,
+    color: colors.textDark,
+    letterSpacing: -3,
+  },
+  bpSlash: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 28,
+    color: colors.textLight,
+    marginHorizontal: 4,
+  },
+  bpUnit: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 14,
+    color: colors.textLight,
+    marginLeft: 4,
+  },
+  spacer: {
+    flex: 1,
+  },
+  hrContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: colors.pulseGlow,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
   },
   hrNumber: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 42,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 24,
     color: colors.textDark,
-    letterSpacing: -1.5,
+    marginTop: 2,
   },
-  hrIcon: {
-    fontSize: 16,
-    color: '#FF6B6B',
+  hrLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: colors.textLight,
   },
   heroEmptySection: {
     marginBottom: 16,
@@ -416,8 +432,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...shadows.sm,
   },
   tipIconCircle: {
     width: 36,
@@ -441,11 +456,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 14,
   },
+  startButtonContainer: {
+    width: '100%',
+    ...shadows.glow(colors.primary),
+  },
   startButton: {
-    backgroundColor: colors.primary,
     paddingVertical: 14,
     paddingHorizontal: 32,
-    borderRadius: 12,
+    borderRadius: 14,
     width: '100%',
     alignItems: 'center',
   },
@@ -467,12 +485,11 @@ const styles = StyleSheet.create({
   },
   widgetBanner: {
     flexDirection: 'row',
-    backgroundColor: colors.white,
+    backgroundColor: colors.surfaceTeal,
     borderRadius: 16,
     padding: 20,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...shadows.md,
   },
   widgetIconContainer: {
     width: 48,
@@ -487,15 +504,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   widgetBannerTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
     color: colors.textDark,
     marginBottom: 4,
   },
   widgetBannerDesc: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 13,
+    fontSize: 15,
     color: colors.textMedium,
-    lineHeight: 18,
+    lineHeight: 22,
   },
 });

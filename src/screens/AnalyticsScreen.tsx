@@ -3,13 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle, Line, Text as SvgText } from 'react-native-svg';
 import * as shape from 'd3-shape';
-import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing, withDelay, FadeInDown, FadeIn } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedProps, useAnimatedStyle, withTiming, Easing, withDelay, FadeInDown, FadeIn } from 'react-native-reanimated';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
+import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 
 import { colors } from '../theme/colors';
+import { shadows } from '../theme/shadows';
 import { typography } from '../theme/typography';
 import { getRecords, BloodPressureRecord } from '../store/storage';
 import { PrimaryButton } from '../components/PrimaryButton';
@@ -30,6 +31,7 @@ export const AnalyticsScreen = () => {
   const [filter, setFilter] = useState<'week' | 'month' | 'year'>('week');
   const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
+  const [filteredRecords, setFilteredRecords] = useState<BloodPressureRecord[]>([]);
   const [allRecords, setAllRecords] = useState<BloodPressureRecord[]>([]);
   
   const pathProgress = useSharedValue(0);
@@ -47,16 +49,17 @@ export const AnalyticsScreen = () => {
     
     const sortedAsc = [...rawRecords].sort((a, b) => a.timestamp - b.timestamp);
     const now = Date.now();
-    let filteredRecords = sortedAsc;
+    let currentFilteredRecords = sortedAsc;
     if (filter === 'week') {
-      filteredRecords = sortedAsc.filter(r => r.timestamp >= now - 7 * 24 * 60 * 60 * 1000);
+      currentFilteredRecords = sortedAsc.filter(r => r.timestamp >= now - 7 * 24 * 60 * 60 * 1000);
     } else if (filter === 'month') {
-      filteredRecords = sortedAsc.filter(r => r.timestamp >= now - 30 * 24 * 60 * 60 * 1000);
+      currentFilteredRecords = sortedAsc.filter(r => r.timestamp >= now - 30 * 24 * 60 * 60 * 1000);
     } else if (filter === 'year') {
-      filteredRecords = sortedAsc.filter(r => r.timestamp >= now - 365 * 24 * 60 * 60 * 1000);
+      currentFilteredRecords = sortedAsc.filter(r => r.timestamp >= now - 365 * 24 * 60 * 60 * 1000);
     }
     
-    setRecords(filteredRecords.slice(-14)); // Show max 14 points for clarity
+    setFilteredRecords(currentFilteredRecords);
+    setRecords(currentFilteredRecords.slice(-14)); // Show max 14 points for clarity
 
     pathProgress.value = 0;
     pathProgress.value = withDelay(200, withTiming(1, { duration: 1200, easing: Easing.out(Easing.cubic) }));
@@ -114,6 +117,18 @@ export const AnalyticsScreen = () => {
       .y(d => d[1])
       .curve(shape.curveMonotoneX);
     return lineGenerator(points) || '';
+  };
+
+  const generateArea = (data: BloodPressureRecord[], getValue: (r: BloodPressureRecord) => number) => {
+    if (!scales) return '';
+    if (data.length <= 1) return '';
+    const points = data.map((r, i) => [scales.scaleX(i), scales.scaleY(getValue(r))] as [number, number]);
+    const areaGenerator = shape.area()
+      .x(d => d[0])
+      .y0(GRAPH_HEIGHT - PADDING_BOTTOM)
+      .y1(d => d[1])
+      .curve(shape.curveMonotoneX);
+    return areaGenerator(points) || '';
   };
 
   const animatedProps = useAnimatedProps(() => ({
@@ -184,40 +199,74 @@ export const AnalyticsScreen = () => {
   };
 
   const getLatestAverage = () => {
-    if (records.length === 0) return null;
-    const recent = records.slice(-7);
-    const avgSys = Math.round(recent.reduce((a, r) => a + r.systolic, 0) / recent.length);
-    const avgDia = Math.round(recent.reduce((a, r) => a + r.diastolic, 0) / recent.length);
-    return { sys: avgSys, dia: avgDia };
+    if (filteredRecords.length === 0) return null;
+    const avgSys = Math.round(filteredRecords.reduce((a, r) => a + r.systolic, 0) / filteredRecords.length);
+    const avgDia = Math.round(filteredRecords.reduce((a, r) => a + r.diastolic, 0) / filteredRecords.length);
+    const minSys = Math.min(...filteredRecords.map(r => r.systolic));
+    const minDia = Math.min(...filteredRecords.map(r => r.diastolic));
+    const maxSys = Math.max(...filteredRecords.map(r => r.systolic));
+    const maxDia = Math.max(...filteredRecords.map(r => r.diastolic));
+    
+    return { avgSys, avgDia, minSys, minDia, maxSys, maxDia };
   };
 
-  const average = getLatestAverage();
+  const stats = getLatestAverage();
+
+  const FILTER_OPTIONS = ['week', 'month', 'year'] as const;
+  const [filterWidth, setFilterWidth] = useState(0);
+
+  const indicatorStyle = useAnimatedStyle(() => {
+    const index = FILTER_OPTIONS.indexOf(filter);
+    const tabWidth = filterWidth / 3;
+    return {
+      transform: [{ translateX: withTiming(index * tabWidth, { duration: 250, easing: Easing.out(Easing.cubic) }) }]
+    };
+  });
 
   const renderChartMode = () => (
     <Animated.View entering={FadeIn.duration(300)}>
-      <View style={styles.filterContainer}>
-        {(['week', 'month', 'year'] as const).map((f) => (
+      <View 
+        style={styles.pillContainer} 
+        onLayout={(e) => setFilterWidth(e.nativeEvent.layout.width)}
+      >
+        {filterWidth > 0 && (
+          <Animated.View style={[styles.pillIndicator, indicatorStyle, { width: filterWidth / 3 }]} />
+        )}
+        {FILTER_OPTIONS.map((f) => (
           <TouchableOpacity 
             key={f} 
             onPress={() => setFilter(f)}
-            style={[styles.filterTab, filter === f && styles.filterTabActive]}
+            style={styles.pillTab}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterText, filter === f && styles.filterTextActive]}>
+            <Text style={[styles.pillText, filter === f && styles.pillTextActive]}>
               {f === 'week' ? 'Week' : f === 'month' ? 'Month' : 'Year'}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {average && (
-        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.summaryContainer}>
-          <Text style={styles.summaryLabel}>Average ({filter})</Text>
-          <View style={styles.summaryValuesRow}>
-            <Text style={styles.summaryValue}>{average.sys}</Text>
-            <Text style={styles.summarySlash}>/</Text>
-            <Text style={styles.summaryValue}>{average.dia}</Text>
-            <Text style={styles.summaryUnit}> mmHg</Text>
+      {stats && (
+        <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.metricsCard}>
+          <View style={styles.metricBlock}>
+            <Text style={styles.metricLabel}>Average (mmHg)</Text>
+            <View style={styles.metricValueRow}>
+              <Text style={styles.metricValue}>{stats.avgSys}/{stats.avgDia}</Text>
+            </View>
+          </View>
+          <View style={styles.metricDivider} />
+          <View style={styles.metricBlock}>
+            <Text style={styles.metricLabel}>Lowest (mmHg)</Text>
+            <View style={styles.metricValueRow}>
+              <Text style={styles.metricValue}>{stats.minSys}/{stats.minDia}</Text>
+            </View>
+          </View>
+          <View style={styles.metricDivider} />
+          <View style={styles.metricBlock}>
+            <Text style={styles.metricLabel}>Highest (mmHg)</Text>
+            <View style={styles.metricValueRow}>
+              <Text style={styles.metricValue}>{stats.maxSys}/{stats.maxDia}</Text>
+            </View>
           </View>
         </Animated.View>
       )}
@@ -244,12 +293,16 @@ export const AnalyticsScreen = () => {
             <Svg width={GRAPH_WIDTH} height={GRAPH_HEIGHT}>
               <Defs>
                 <LinearGradient id="gradientSys" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <Stop offset="0%" stopColor={colors.primaryLight} />
-                  <Stop offset="100%" stopColor={colors.primary} />
+                  <Stop offset="0%" stopColor={colors.systolic} />
+                  <Stop offset="100%" stopColor={colors.systolic} />
                 </LinearGradient>
                 <LinearGradient id="gradientDia" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <Stop offset="0%" stopColor="#2DD4BF" />
-                  <Stop offset="100%" stopColor={colors.primaryLight} />
+                  <Stop offset="0%" stopColor={colors.diastolic} />
+                  <Stop offset="100%" stopColor={colors.diastolic} />
+                </LinearGradient>
+                <LinearGradient id='sysGradient' x1='0' y1='0' x2='0' y2='1'>
+                  <Stop offset='0' stopColor={colors.systolic} stopOpacity='0.2' />
+                  <Stop offset='1' stopColor={colors.systolic} stopOpacity='0' />
                 </LinearGradient>
               </Defs>
 
@@ -303,6 +356,10 @@ export const AnalyticsScreen = () => {
 
               {records.length >= 2 && scales && (
                 <>
+                  <Path
+                    d={generateArea(records, r => r.systolic)}
+                    fill="url(#sysGradient)"
+                  />
                   <AnimatedPath
                     d={generatePath(records, r => r.diastolic)}
                     fill="none"
@@ -331,7 +388,7 @@ export const AnalyticsScreen = () => {
                     cy={scales.scaleY(r.systolic)}
                     r={4.5}
                     fill={colors.white}
-                    stroke={colors.primary}
+                    stroke={colors.systolic}
                     strokeWidth={2.5}
                   />
                   <Circle
@@ -339,7 +396,7 @@ export const AnalyticsScreen = () => {
                     cy={scales.scaleY(r.diastolic)}
                     r={3.5}
                     fill={colors.white}
-                    stroke={colors.primaryLight}
+                    stroke={colors.diastolic}
                     strokeWidth={2.5}
                   />
                 </React.Fragment>
@@ -389,7 +446,7 @@ export const AnalyticsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 100 }]}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 32, paddingBottom: insets.bottom + 130 }]}>
         <View style={styles.header}>
           <Text style={styles.title}>Your Trends</Text>
           <Text style={styles.headerDate}>{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</Text>
@@ -416,10 +473,14 @@ export const AnalyticsScreen = () => {
         {viewMode === 'chart' ? renderChartMode() : renderListMode()}
 
         <View style={styles.exportSection}>
-          <PrimaryButton 
-            title="Export PDF Report" 
-            onPress={handleExportPDF} 
-          />
+          <TouchableOpacity onPress={handleExportPDF} activeOpacity={0.8}>
+            <ExpoLinearGradient
+              colors={[colors.gradientStart, colors.gradientEnd]}
+              style={styles.exportButton}
+            >
+              <Text style={styles.exportButtonText}>Export PDF Report</Text>
+            </ExpoLinearGradient>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </View>
@@ -474,60 +535,77 @@ const styles = StyleSheet.create({
   segmentTextActive: {
     color: colors.textDark,
   },
-  filterContainer: {
+  pillContainer: {
+    backgroundColor: colors.borderLight,
+    borderRadius: 12,
+    padding: 3,
     flexDirection: 'row',
-    backgroundColor: colors.cardWarm,
-    borderRadius: 10,
-    padding: 4,
     marginBottom: 32,
+    position: 'relative',
   },
-  filterTab: {
+  pillIndicator: {
+    position: 'absolute',
+    top: 3,
+    bottom: 3,
+    left: 3,
+    backgroundColor: colors.white,
+    borderRadius: 10,
+    ...shadows.sm,
+  },
+  pillTab: {
     flex: 1,
     paddingVertical: 8,
     alignItems: 'center',
-    borderRadius: 6,
+    justifyContent: 'center',
+    zIndex: 1,
   },
-  filterTabActive: {
-    backgroundColor: colors.white,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  filterText: {
+  pillText: {
     ...typography.caption,
     color: colors.textMedium,
     fontWeight: '500',
   },
-  filterTextActive: {
+  pillTextActive: {
     color: colors.textDark,
     fontWeight: '600',
   },
-  summaryContainer: {
-    marginBottom: 32,
-  },
-  summaryLabel: {
-    ...typography.label,
-    color: colors.textLight,
-    marginBottom: 8,
-  },
-  summaryValuesRow: {
+  metricsCard: {
+    backgroundColor: colors.white,
+    borderRadius: 20,
+    padding: 20,
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+    ...shadows.md,
   },
-  summaryValue: {
-    ...typography.numberLarge,
-    color: colors.textDark,
+  metricBlock: {
+    flex: 1,
+    alignItems: 'center',
   },
-  summarySlash: {
-    ...typography.numberLarge,
-    color: colors.border,
-    marginHorizontal: 8,
-  },
-  summaryUnit: {
+  metricLabel: {
     ...typography.caption,
     color: colors.textLight,
+    marginBottom: 4,
+  },
+  metricValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 2,
+  },
+  metricValue: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 20,
+    color: colors.textDark,
+  },
+  metricUnit: {
+    ...typography.micro,
+    color: colors.textLight,
+  },
+  metricDivider: {
+    width: 1,
+    backgroundColor: colors.borderLight,
+    marginVertical: 4,
+    alignSelf: 'stretch',
   },
   graphSection: {
     marginBottom: 32,
@@ -564,8 +642,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: colors.cardWarm,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
+    ...shadows.sm,
   },
   emptyTitle: {
     ...typography.h3,
@@ -578,5 +655,16 @@ const styles = StyleSheet.create({
   },
   exportSection: {
     marginTop: 16,
+  },
+  exportButton: {
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
+  exportButtonText: {
+    ...typography.button,
+    color: colors.white,
   },
 });

@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { requestNotificationPermission, scheduleDailyReminder, cancelReminder } from '../services/notificationService';
 
 import { HomeScreen } from '../screens/HomeScreen';
@@ -59,9 +60,12 @@ const AddTabBarButton = ({ children, onPress }: any) => {
       onPressOut={handlePressOut}
       activeOpacity={0.9}
     >
-      <View style={styles.addButton}>
+      <LinearGradient
+        colors={[colors.gradientStart, colors.gradientEnd]}
+        style={styles.addButton}
+      >
         <PlusIcon size={32} color={colors.white} strokeWidth={3} />
-      </View>
+      </LinearGradient>
     </AnimatedTouchableOpacity>
   );
 };
@@ -78,7 +82,12 @@ const MainTabs = () => {
         tabBarInactiveTintColor: colors.textLight,
         tabBarStyle: [
           styles.tabBar,
-          { height: 64 + insets.bottom, paddingBottom: insets.bottom || 12 },
+          { 
+            height: 64 + insets.bottom,
+            paddingBottom: insets.bottom || 12,
+            marginHorizontal: 16,
+            marginBottom: insets.bottom > 0 ? 0 : 8,
+          },
         ],
         tabBarLabelStyle: styles.tabLabel,
       }}
@@ -224,9 +233,14 @@ const PushPermissionScreen = () => {
           activeOpacity={0.8}
           disabled={isRequesting}
         >
-          <Text style={pushStyles.buttonText}>
-            {isRequesting ? 'Setting up...' : 'Turn On Reminders'}
-          </Text>
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            style={pushStyles.buttonGradient}
+          >
+            <Text style={pushStyles.buttonText}>
+              {isRequesting ? 'Setting up...' : 'Turn On Reminders'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
         
         <TouchableOpacity 
@@ -296,11 +310,15 @@ export const AppNavigator = () => {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: colors.card,
-    borderTopWidth: 1,
-    borderTopColor: colors.borderLight,
-    elevation: 0,
-    shadowOpacity: 0,
+    position: 'absolute',
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderTopWidth: 0,
+    borderRadius: 28,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 20,
+    elevation: 8,
   },
   tabLabel: {
     fontFamily: 'Inter_600SemiBold',
@@ -316,14 +334,13 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.35,
     shadowRadius: 12,
     elevation: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 
@@ -433,11 +450,14 @@ const pushStyles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   button: {
-    backgroundColor: colors.primary,
     borderRadius: 16,
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  buttonGradient: {
     paddingVertical: 18,
     alignItems: 'center',
-    marginBottom: 12,
+    borderRadius: 16,
   },
   buttonDisabled: {
     opacity: 0.7,

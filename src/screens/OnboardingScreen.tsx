@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
+import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue, withTiming } from 'react-native-reanimated';
 import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -91,11 +92,11 @@ export default function OnboardingScreen() {
       <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
         <View style={styles.pagination}>
           {SLIDES.map((_, index) => {
-            const isActive = currentIndex === index;
+            const isFilled = index <= currentIndex;
             return (
-              <View
+              <Animated.View
                 key={index}
-                style={[styles.dot, isActive && styles.dotActive]}
+                style={[styles.dot, isFilled && styles.dotActive]}
               />
             );
           })}
@@ -128,10 +129,15 @@ export default function OnboardingScreen() {
 
       {/* Button at bottom */}
       <View style={[styles.bottomButton, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity style={styles.button} onPress={handleNext} activeOpacity={0.9}>
-          <Text style={styles.buttonText}>
-            {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
-          </Text>
+        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
+          <LinearGradient
+            colors={[colors.gradientStart, colors.gradientEnd]}
+            style={styles.button}
+          >
+            <Text style={styles.buttonText}>
+              {currentIndex === SLIDES.length - 1 ? 'Get Started  →' : 'Continue'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </View>
@@ -141,7 +147,7 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#F8F9FA',
   },
   topArea: {
     position: 'absolute',
@@ -159,7 +165,7 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 3,
     borderRadius: 1.5,
-    backgroundColor: colors.border,
+    backgroundColor: colors.borderLight,
     marginHorizontal: 4,
   },
   dotActive: {
@@ -173,20 +179,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 34,
     color: colors.textDark,
     textAlign: 'center',
-    marginBottom: 8,
-    letterSpacing: -0.3,
-    lineHeight: 32,
+    marginBottom: 10,
+    letterSpacing: -1,
+    lineHeight: 40,
   },
   description: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 15,
+    fontSize: 17,
     color: colors.textMedium,
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   flatList: {
     flex: 1,
@@ -218,14 +224,18 @@ const styles = StyleSheet.create({
     right: 32,
   },
   button: {
-    backgroundColor: colors.primary,
-    paddingVertical: 16,
-    borderRadius: 14,
+    paddingVertical: 18,
+    borderRadius: 16,
     alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
   },
   buttonText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
+    fontSize: 17,
     color: colors.white,
   },
 });

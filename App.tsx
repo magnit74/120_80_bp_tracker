@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts, Inter_300Light, Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
+import { Manrope_700Bold, Manrope_800ExtraBold } from '@expo-google-fonts/manrope';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import './src/services/notificationService';
@@ -18,6 +19,8 @@ export default function App() {
     Inter_500Medium,
     Inter_600SemiBold,
     Inter_700Bold,
+    Manrope_700Bold,
+    Manrope_800ExtraBold,
   });
 
   useEffect(() => {

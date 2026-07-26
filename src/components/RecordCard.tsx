@@ -1,13 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TouchableOpacityProps } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, PressableProps } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
+import { shadows } from '../theme/shadows';
 import { HeartPulseIcon } from './Icons';
 
-export interface RecordCardProps extends TouchableOpacityProps {
+export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
   diastolic: number;
   pulse: number;
   time: string;
+  style?: any;
 }
 
 export const RecordCard: React.FC<RecordCardProps> = ({
@@ -16,148 +20,153 @@ export const RecordCard: React.FC<RecordCardProps> = ({
   pulse,
   time,
   style,
+  onPress,
+  onPressIn,
+  onPressOut,
   ...props
 }) => {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [{ scale: scale.value }],
+    };
+  });
+
   const getStatusColor = () => {
-    // AHA 2017 guidelines
     if (systolic >= 140 || diastolic >= 90) return colors.danger;
-    if (systolic >= 120 || diastolic >= 80) return colors.warning;
+    if (systolic >= 130 || diastolic > 80) return colors.warning;
+    if (systolic > 120) return '#F59E0B';
     return colors.success;
   };
 
   const getStatusLabel = () => {
     if (systolic >= 140 || diastolic >= 90) return 'High';
-    if (systolic >= 120 || diastolic >= 80) return 'Elevated';
+    if (systolic >= 130 || diastolic > 80) return 'Stage 1';
+    if (systolic > 120) return 'Elevated';
     return 'Normal';
   };
 
+  const handlePressIn = useCallback((e: any) => {
+    scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (onPressIn) onPressIn(e);
+  }, [onPressIn, scale]);
+
+  const handlePressOut = useCallback((e: any) => {
+    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+    if (onPressOut) onPressOut(e);
+  }, [onPressOut, scale]);
+
   return (
-    <TouchableOpacity
-      style={[styles.card, style]}
-      activeOpacity={0.7}
-      {...props}
-    >
-      <View style={styles.topRow}>
-        <View style={styles.bpSection}>
-          <Text style={styles.bpNumber}>{systolic}</Text>
-          <Text style={styles.bpSlash}>/</Text>
-          <Text style={styles.bpDiastolic}>{diastolic}</Text>
-          <Text style={styles.bpUnit}>mmHg</Text>
-        </View>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
-          <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>{getStatusLabel()}</Text>
-        </View>
-      </View>
-
-      <View style={styles.bottomRow}>
-        <View style={styles.pulseSection}>
-          <View style={styles.pulseIcon}>
-            <HeartPulseIcon size={14} color="#E85D75" />
-          </View>
-          <Text style={styles.pulseValue}>{pulse}</Text>
-          <Text style={styles.pulseUnit}>bpm</Text>
-        </View>
-
+    <Animated.View style={[animatedStyle, style]}>
+      <Pressable
+        style={styles.card}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        onPress={onPress}
+        {...props}
+      >
+      <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+      
+      <View style={styles.timeSection}>
         <Text style={styles.timeText}>{time}</Text>
       </View>
-    </TouchableOpacity>
+
+      <View style={styles.bpSection}>
+        <Text style={[styles.bpNumber, { color: getStatusColor() }]}>{systolic}</Text>
+        <Text style={styles.bpSlash}>/</Text>
+        <Text style={styles.bpDiastolic}>{diastolic}</Text>
+      </View>
+
+      <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
+        <Text style={[styles.statusText, { color: getStatusColor() }]}>{getStatusLabel()}</Text>
+      </View>
+
+      <View style={styles.pulseSection}>
+        <HeartPulseIcon size={14} color={colors.pulse} />
+        <Text style={styles.pulseValue}>{pulse}</Text>
+      </View>
+      
+      <Text style={styles.arrow}>›</Text>
+      </Pressable>
+    </Animated.View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
-    marginBottom: 16,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 14,
-  },
-  bpSection: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  bpNumber: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 56,
-    color: colors.textDark,
-    letterSpacing: -2,
-    lineHeight: 60,
-  },
-  bpSlash: {
-    fontFamily: 'Inter_300Light',
-    fontSize: 42,
-    color: colors.textLight,
-    marginHorizontal: 4,
-  },
-  bpDiastolic: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 56,
-    color: colors.textDark,
-    letterSpacing: -2,
-    lineHeight: 60,
-  },
-  bpUnit: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textLight,
-    marginLeft: 8,
-  },
-  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    gap: 5,
+    backgroundColor: colors.white,
+    borderRadius: 18,
+    marginBottom: 10,
+    paddingVertical: 16,
+    paddingHorizontal: 14,
+    ...shadows.md,
   },
   statusDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: 10,
+  },
+  timeSection: {
+    width: 55,
+  },
+  timeText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: colors.textMedium,
+  },
+  bpSection: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginLeft: 8,
+  },
+  bpNumber: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 22,
+    letterSpacing: -0.5,
+  },
+  bpSlash: {
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 18,
+    color: colors.textLight,
+    marginHorizontal: 2,
+  },
+  bpDiastolic: {
+    fontFamily: 'Manrope_800ExtraBold',
+    fontSize: 22,
+    color: colors.textDark,
+    letterSpacing: -0.5,
+  },
+  statusBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    marginRight: 12,
   },
   statusText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-  },
-  bottomRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 11,
   },
   pulseSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-  },
-  pulseIcon: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#FFE5E5',
-    justifyContent: 'center',
-    alignItems: 'center',
+    gap: 4,
+    marginRight: 8,
   },
   pulseValue: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Manrope_700Bold',
     fontSize: 16,
     color: colors.textDark,
   },
-  pulseUnit: {
+  arrow: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 12,
+    fontSize: 22,
     color: colors.textLight,
-  },
-  timeText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textLight,
-  },
+    marginTop: -2,
+  }
 });
