@@ -36,13 +36,6 @@
       "@react-native-community/datetimepicker",
       "expo-notifications",
       "./plugins/withModularHeaders.js",
-      [
-        "expo-widgets",
-        {
-          "name": "BloodPressureWidget",
-          "mode": "production"
-        }
-      ],
       "expo-font",
       "expo-mail-composer",
       "expo-sharing",
