@@ -52,11 +52,17 @@ export const HomeScreen = () => {
 
   useEffect(() => {
     if (todayLatest) {
-      BloodPressureWidget.updateSnapshot({
-        systolic: todayLatest.systolic,
-        diastolic: todayLatest.diastolic,
-        status: getBPStatus(todayLatest.systolic, todayLatest.diastolic).label
-      });
+      try {
+        if (BloodPressureWidget && typeof BloodPressureWidget.updateSnapshot === 'function') {
+          BloodPressureWidget.updateSnapshot({
+            systolic: todayLatest.systolic,
+            diastolic: todayLatest.diastolic,
+            status: getBPStatus(todayLatest.systolic, todayLatest.diastolic).label
+          });
+        }
+      } catch (e) {
+        console.warn('Widget update failed:', e);
+      }
     }
   }, [todayLatest]);
 
