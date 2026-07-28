@@ -5,7 +5,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BloodPressureWidget } from '../../widgets/BloodPressureWidget';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
@@ -53,6 +52,7 @@ export const HomeScreen = () => {
   useEffect(() => {
     if (todayLatest) {
       try {
+        const { BloodPressureWidget } = require('../../widgets/BloodPressureWidget');
         if (BloodPressureWidget && typeof BloodPressureWidget.updateSnapshot === 'function') {
           BloodPressureWidget.updateSnapshot({
             systolic: todayLatest.systolic,
