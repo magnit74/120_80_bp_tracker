@@ -12,6 +12,7 @@ import { RecordCard } from '../components/RecordCard';
 import { HealthBenefitCard } from '../components/HealthBenefitCard';
 import { CallOfferCard } from '../components/CallOfferCard';
 import { RatingPrompt } from '../components/RatingPrompt';
+import { DailyHealthTip } from '../components/DailyHealthTip';
 import { HeartPulseIcon, ClockIcon, ShieldIcon, ChartIcon } from '../components/Icons';
 import { getRecords, BloodPressureRecord } from '../store/storage';
 import { shouldShowReviewPrompt } from '../services/reviewService';
@@ -209,6 +210,10 @@ export const HomeScreen = () => {
 
         <Animated.View entering={FadeInDown.delay(300).duration(400)} style={{ marginTop: 16 }}>
           <CallOfferCard />
+        </Animated.View>
+
+        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={{ marginTop: 16 }}>
+          <DailyHealthTip />
         </Animated.View>
 
 
