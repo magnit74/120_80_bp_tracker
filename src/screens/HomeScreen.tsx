@@ -12,7 +12,6 @@ import { RecordCard } from '../components/RecordCard';
 import { HealthBenefitCard } from '../components/HealthBenefitCard';
 import { CallOfferCard } from '../components/CallOfferCard';
 import { RatingPrompt } from '../components/RatingPrompt';
-import { WidgetInstructionModal } from '../components/WidgetInstructionModal';
 import { HeartPulseIcon, ClockIcon, ShieldIcon, ChartIcon } from '../components/Icons';
 import { getRecords, BloodPressureRecord } from '../store/storage';
 import { shouldShowReviewPrompt } from '../services/reviewService';
@@ -41,7 +40,6 @@ export const HomeScreen = () => {
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showRatingPrompt, setShowRatingPrompt] = useState(false);
-  const [isWidgetModalVisible, setIsWidgetModalVisible] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -213,17 +211,6 @@ export const HomeScreen = () => {
           <CallOfferCard />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={{ marginTop: 16 }}>
-          <Pressable style={styles.widgetBanner} onPress={() => setIsWidgetModalVisible(true)}>
-            <View style={styles.widgetIconContainer}>
-              <HeartPulseIcon size={28} color={colors.primary} />
-            </View>
-            <View style={styles.widgetTextContainer}>
-              <Text style={styles.widgetBannerTitle}>Home Screen Widget</Text>
-              <Text style={styles.widgetBannerDesc}>Add our widget to your home screen for one-tap tracking.</Text>
-            </View>
-          </Pressable>
-        </Animated.View>
 
         {showRatingPrompt && (
           <Animated.View entering={FadeInDown.delay(350).duration(400)} style={{ marginTop: 16 }}>
@@ -272,10 +259,7 @@ export const HomeScreen = () => {
         )}
       </ScrollView>
 
-      <WidgetInstructionModal 
-        visible={isWidgetModalVisible} 
-        onClose={() => setIsWidgetModalVisible(false)} 
-      />
+
     </View>
   );
 };
