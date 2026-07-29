@@ -22,7 +22,7 @@ workflows:
           source: true
     scripts:
       - name: Install dependencies
-        script: npm install
+        script: npm install --legacy-peer-deps
       - name: Generate Native iOS code (Expo Prebuild)
         script: npx expo prebuild --platform ios --clean
       - name: Install CocoaPods
