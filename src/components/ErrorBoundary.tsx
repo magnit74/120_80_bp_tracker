@@ -44,14 +44,13 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   title: {
-    fontFamily: 'Inter_700Bold',
     fontSize: 20,
+    fontWeight: '700',
     color: colors.danger,
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
-    fontFamily: 'Inter_400Regular',
     fontSize: 14,
     color: colors.textMedium,
     textAlign: 'center',

@@ -259,15 +259,23 @@ export const AppNavigator = () => {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
 
   useEffect(() => {
+    let mounted = true;
     async function checkOnboarding() {
       try {
         const hasViewed = await AsyncStorage.getItem('hasViewedOnboarding');
-        setIsFirstLaunch(hasViewed === null);
+        if (mounted) setIsFirstLaunch(hasViewed === null);
       } catch (error) {
-        setIsFirstLaunch(false);
+        if (mounted) setIsFirstLaunch(false);
       }
     }
     checkOnboarding();
+    const timeout = setTimeout(() => {
+      if (mounted) setIsFirstLaunch((prev) => (prev === null ? false : prev));
+    }, 1500);
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
   if (isFirstLaunch === null) {

@@ -8,7 +8,7 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { ErrorBoundary } from './src/components/ErrorBoundary';
 import './src/services/notificationService';
 
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function App() {
   const [appReady, setAppReady] = useState(false);
@@ -30,22 +30,26 @@ export default function App() {
   }, [fontsLoaded, fontError]);
 
   useEffect(() => {
-    const timer = setTimeout(() => setAppReady(true), 5000);
+    const timer = setTimeout(() => setAppReady(true), 3000);
     return () => clearTimeout(timer);
   }, []);
 
   const onLayoutRootView = useCallback(async () => {
     if (appReady) {
-      await SplashScreen.hideAsync();
+      try {
+        await SplashScreen.hideAsync();
+      } catch (e) {
+        // Ignore splash hide errors
+      }
     }
   }, [appReady]);
 
   if (!appReady) {
-    return null;
+    return <View style={{ flex: 1, backgroundColor: '#FAF3E0' }} />;
   }
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+    <View style={{ flex: 1, backgroundColor: '#FAF3E0' }} onLayout={onLayoutRootView}>
       <ErrorBoundary>
         <AppNavigator />
       </ErrorBoundary>
