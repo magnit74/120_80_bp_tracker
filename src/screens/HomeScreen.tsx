@@ -49,22 +49,7 @@ export const HomeScreen = () => {
     }, [])
   );
 
-  useEffect(() => {
-    if (todayLatest) {
-      try {
-        const { BloodPressureWidget } = require('../../widgets/BloodPressureWidget');
-        if (BloodPressureWidget && typeof BloodPressureWidget.updateSnapshot === 'function') {
-          BloodPressureWidget.updateSnapshot({
-            systolic: todayLatest.systolic,
-            diastolic: todayLatest.diastolic,
-            status: getBPStatus(todayLatest.systolic, todayLatest.diastolic).label
-          });
-        }
-      } catch (e) {
-        console.warn('Widget update failed:', e);
-      }
-    }
-  }, [todayLatest]);
+
 
   const loadRecords = async () => {
     try {

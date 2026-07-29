@@ -13,7 +13,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.magnit74.bptracker",
-      "buildNumber": "24",
+      "buildNumber": "25",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -35,13 +35,6 @@
       "@react-native-firebase/crashlytics",
       "@react-native-community/datetimepicker",
       "expo-notifications",
-      [
-        "expo-widgets",
-        {
-          "name": "BloodPressureWidget",
-          "mode": "production"
-        }
-      ],
       [
         "expo-build-properties",
         {
