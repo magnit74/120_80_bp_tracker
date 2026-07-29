@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue, withTiming } from 'react-native-reanimated';
-import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -54,7 +53,7 @@ const SlideItem = ({ item, index, scrollX }: { item: typeof SLIDES[0], index: nu
       <Animated.View style={[styles.imageArea, imageStyle]}>
         <Image source={item.image} style={styles.image} resizeMode="contain" />
         <Animated.View style={[styles.blurOverlay, blurOverlayStyle]} pointerEvents="none">
-          <BlurView intensity={8} style={StyleSheet.absoluteFill} tint="light" />
+          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
         </Animated.View>
       </Animated.View>
     </View>
