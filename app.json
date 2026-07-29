@@ -13,7 +13,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.magnit74.bptracker",
-      "buildNumber": "34",
+      "buildNumber": "35",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -35,12 +35,7 @@
       "@react-native-firebase/analytics",
       "@react-native-firebase/crashlytics",
       "@react-native-community/datetimepicker",
-      "expo-notifications",
-      "expo-font",
-      "expo-mail-composer",
-      "expo-sharing",
-      "expo-splash-screen",
-      "expo-status-bar"
+      "expo-notifications"
     ],
     "extra": {
       "eas": {
