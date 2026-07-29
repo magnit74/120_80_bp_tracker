@@ -25,6 +25,9 @@ workflows:
         script: npm install
       - name: Generate Native iOS code (Expo Prebuild)
         script: npx expo prebuild --platform ios --clean
+      - name: Install CocoaPods
+        script: |
+          cd ios && pod install
       - name: Initialize keychain
         script: keychain initialize
       - name: Fetch App Store signing files
@@ -36,11 +39,7 @@ workflows:
         script: xcode-project use-profiles --project "ios/12080BPTracker.xcodeproj"
       - name: Build iOS IPA
         script: |
-          if [ -d "ios/12080BPTracker.xcworkspace" ]; then
-            xcode-project build-ipa --workspace ios/12080BPTracker.xcworkspace --scheme 12080BPTracker
-          else
-            xcode-project build-ipa --project ios/12080BPTracker.xcodeproj --scheme 12080BPTracker
-          fi
+          xcode-project build-ipa --workspace ios/12080BPTracker.xcworkspace --scheme 12080BPTracker
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
