@@ -90,7 +90,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({
 
               {/* Pulse block */}
               <View style={styles.pulseContainer}>
-                <HeartPulseIcon size={16} color={colors.pulse} />
+                <HeartPulseIcon size={14} color={colors.pulse} />
                 <Text style={styles.pulseValue}>{pulse}</Text>
               </View>
               
@@ -111,18 +111,23 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     borderRadius: 20,
     paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingLeft: 20,
+    paddingRight: 16,
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
-    marginHorizontal: 0, // removed margin so it can be controlled by parent
+    marginHorizontal: 0,
+    position: 'relative',
     ...shadows.sm,
   },
   statusLine: {
-    width: 4,
-    height: 38,
-    borderRadius: 2,
-    marginRight: 16,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 6,
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
   },
   contentContainer: {
     flex: 1,
@@ -132,7 +137,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     fontSize: 13,
     color: '#9CA3AF', // light gray
-    marginBottom: 2,
+    marginBottom: 4,
     letterSpacing: 0.2,
   },
   dataRow: {
@@ -146,30 +151,27 @@ const styles = StyleSheet.create({
   },
   systolic: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 32,
+    fontSize: 30,
     letterSpacing: -1,
     fontVariant: ['tabular-nums'],
   },
   slash: {
     fontFamily: 'Manrope_700Bold',
-    fontSize: 24,
+    fontSize: 30,
     color: '#D1D5DB', // light gray slash
     marginHorizontal: 4,
-    transform: [{ translateY: 2 }],
   },
   diastolic: {
     fontFamily: 'Manrope_700Bold',
-    fontSize: 24,
+    fontSize: 30,
     color: '#111827', // almost black
     fontVariant: ['tabular-nums'],
-    transform: [{ translateY: 2 }],
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
     marginLeft: 6,
-    transform: [{ translateY: 2 }],
   },
   pulseContainer: {
     flexDirection: 'row',
@@ -178,7 +180,7 @@ const styles = StyleSheet.create({
   },
   pulseValue: {
     fontFamily: 'Inter_700Bold',
-    fontSize: 18,
+    fontSize: 15,
     color: colors.pulse,
     fontVariant: ['tabular-nums'],
     marginLeft: 4,
