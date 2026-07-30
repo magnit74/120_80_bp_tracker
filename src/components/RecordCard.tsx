@@ -5,7 +5,7 @@ import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
-import { HeartPulseIcon } from './Icons';
+import { HeartPulseIcon, GripIcon } from './Icons';
 
 export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
@@ -43,13 +43,6 @@ export const RecordCard: React.FC<RecordCardProps> = ({
     return colors.success;
   };
 
-  const getStatusLabel = () => {
-    if (systolic >= 140 || diastolic >= 90) return 'High';
-    if (systolic >= 130 || diastolic > 80) return 'Stage 1';
-    if (systolic > 120) return 'Elevated';
-    return 'Normal';
-  };
-
   const handlePressIn = useCallback((e: any) => {
     scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -80,28 +73,32 @@ export const RecordCard: React.FC<RecordCardProps> = ({
           onPress={onPress}
           {...props}
         >
-          <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+          {/* Status color vertical bar */}
+          <View style={[styles.statusLine, { backgroundColor: getStatusColor() }]} />
           
-          <View style={styles.timeSection}>
+          {/* Main content block */}
+          <View style={styles.contentContainer}>
             <Text style={styles.timeText}>{time}</Text>
+            
+            <View style={styles.bpRow}>
+              <Text style={[styles.systolic, { color: getStatusColor() }]}>{systolic}</Text>
+              <Text style={styles.slash}>/</Text>
+              <Text style={styles.diastolic}>{diastolic}</Text>
+              <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+            </View>
           </View>
 
-          <View style={styles.bpSection}>
-            <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
-            <Text style={styles.bpSlash}>/</Text>
-            <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
-          </View>
-
-          <View style={styles.statusBadge}>
-            <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
-          </View>
-
-          <View style={styles.pulseSection}>
-            <HeartPulseIcon size={14} color={colors.pulse} />
+          {/* Pulse block */}
+          <View style={styles.pulseContainer}>
+            <HeartPulseIcon size={16} color={colors.pulse} />
             <Text style={styles.pulseValue}>{pulse}</Text>
           </View>
           
-          <Text style={styles.arrow}>›</Text>
+          {/* Swipe hint */}
+          <View style={styles.dragHandle}>
+            <GripIcon size={20} color="#D1D5DB" />
+          </View>
+
         </Pressable>
       </Swipeable>
     </Animated.View>
@@ -111,76 +108,85 @@ export const RecordCard: React.FC<RecordCardProps> = ({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.white,
-    borderRadius: 18,
-    padding: 16,
+    borderRadius: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 12,
+    marginHorizontal: 0, // removed margin so it can be controlled by parent
     ...shadows.sm,
   },
-  statusDot: {
-    width: 6,
-    height: 32,
-    borderRadius: 3,
-    marginRight: 14,
+  statusLine: {
+    width: 4,
+    height: 38,
+    borderRadius: 2,
+    marginRight: 16,
   },
-  timeSection: {
+  contentContainer: {
     flex: 1,
+    justifyContent: 'center',
   },
   timeText: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: colors.textMuted,
+    fontSize: 13,
+    color: '#9CA3AF', // light gray
+    marginBottom: 2,
+    letterSpacing: 0.2,
   },
-  bpSection: {
+  bpRow: {
     flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'center',
-    flex: 1.5,
+    alignItems: 'center',
   },
-  bpNumber: {
+  systolic: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 26,
-    letterSpacing: -0.5,
+    fontSize: 32,
+    letterSpacing: -1,
+    fontVariant: ['tabular-nums'],
+    width: 62, // fixed width for 3 digits max
+    textAlign: 'right',
   },
-  bpSlash: {
+  slash: {
     fontFamily: 'Manrope_700Bold',
-    fontSize: 18,
-    color: colors.textMuted,
-    marginHorizontal: 2,
+    fontSize: 24,
+    color: '#D1D5DB', // light gray slash
+    marginHorizontal: 4,
+    transform: [{ translateY: 2 }],
   },
-  bpDiastolic: {
+  diastolic: {
     fontFamily: 'Manrope_700Bold',
-    fontSize: 18,
-    color: colors.textDark,
+    fontSize: 24,
+    color: '#111827', // almost black
+    fontVariant: ['tabular-nums'],
+    width: 42, // fixed width for up to 3 digits
+    textAlign: 'left',
+    transform: [{ translateY: 2 }],
   },
-  statusBadge: {
-    flex: 0.5,
-    alignItems: 'center',
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    marginLeft: 6,
+    transform: [{ translateY: 2 }],
   },
-  badgeDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  pulseSection: {
+  pulseContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    flex: 1,
-    marginRight: 8,
+    width: 58, // fixed width block
+    justifyContent: 'flex-start',
+    marginLeft: 10,
   },
   pulseValue: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
     color: colors.pulse,
-    marginLeft: 6,
+    fontVariant: ['tabular-nums'],
+    marginLeft: 4,
   },
-  arrow: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 20,
-    color: colors.textMuted,
-    marginLeft: 10,
+  dragHandle: {
+    width: 24,
+    alignItems: 'flex-end',
+    justifyContent: 'center',
   },
   deleteButton: {
     backgroundColor: colors.danger,
@@ -188,9 +194,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 80,
     height: '100%',
-    borderTopRightRadius: 18,
-    borderBottomRightRadius: 18,
-    marginBottom: 10,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    marginBottom: 12,
   },
   deleteText: {
     color: colors.white,

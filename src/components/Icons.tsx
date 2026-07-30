@@ -218,3 +218,15 @@ export const StarFilledIcon: React.FC<IconProps> = ({ size = 24, color = '#0F766
     />
   </Svg>
 );
+
+// Grip icon for dragging/swiping
+export const GripIcon: React.FC<IconProps> = ({ size = 24, color = '#9CA3AF' }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Circle cx="9" cy="5" r="1.5" fill={color} />
+    <Circle cx="15" cy="5" r="1.5" fill={color} />
+    <Circle cx="9" cy="12" r="1.5" fill={color} />
+    <Circle cx="15" cy="12" r="1.5" fill={color} />
+    <Circle cx="9" cy="19" r="1.5" fill={color} />
+    <Circle cx="15" cy="19" r="1.5" fill={color} />
+  </Svg>
+);
