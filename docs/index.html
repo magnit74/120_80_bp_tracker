@@ -26,8 +26,25 @@
         header {
             background: linear-gradient(135deg, var(--primary), var(--primary-light));
             color: white;
-            padding: 80px 20px;
+            padding: 40px 20px 80px 20px;
             text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        nav a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: color 0.2s;
+        }
+        nav a:hover, nav a.active {
+            color: white;
+            text-decoration: underline;
         }
         h1 {
             font-family: 'Manrope', sans-serif;
@@ -85,6 +102,11 @@
 </head>
 <body>
     <header>
+        <nav>
+            <a href="index.html" class="active">Home</a>
+            <a href="privacy.html">Privacy Policy</a>
+            <a href="support.html">Support</a>
+        </nav>
         <h1>120/80 BP Tracker</h1>
         <p class="subtitle">Your ultimate blood pressure and heart rate companion. Track, analyze, and improve your cardiovascular health daily.</p>
     </header>
