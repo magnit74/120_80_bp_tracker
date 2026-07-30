@@ -74,9 +74,9 @@ export const RecordCard: React.FC<RecordCardProps> = ({
       </View>
 
       <View style={styles.bpSection}>
-        <Text style={[styles.bpNumber, { color: getStatusColor() }]}>{systolic}</Text>
+        <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
         <Text style={styles.bpSlash}>/</Text>
-        <Text style={styles.bpDiastolic}>{diastolic}</Text>
+        <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
       </View>
 
       <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
@@ -124,13 +124,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     marginLeft: 8,
-    flexShrink: 1,
   },
   bpNumber: {
     fontFamily: 'Manrope_800ExtraBold',
     fontSize: 22,
     letterSpacing: -0.5,
-    flexShrink: 1,
   },
   bpSlash: {
     fontFamily: 'Manrope_700Bold',
@@ -143,7 +141,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.textDark,
     letterSpacing: -0.5,
-    flexShrink: 1,
   },
   statusBadge: {
     paddingHorizontal: 10,

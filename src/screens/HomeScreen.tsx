@@ -137,9 +137,9 @@ export const HomeScreen = () => {
               
               <View style={styles.metricsRow}>
                 <View style={styles.bpRow}>
-                  <Text style={[styles.bpNumber, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]}>{todayLatest.systolic}</Text>
+                  <Text style={[styles.bpNumber, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]} adjustsFontSizeToFit numberOfLines={1}>{todayLatest.systolic}</Text>
                   <Text style={styles.bpSlash}>/</Text>
-                  <Text style={styles.bpNumberBlack}>{todayLatest.diastolic}</Text>
+                  <Text style={styles.bpNumberBlack} adjustsFontSizeToFit numberOfLines={1}>{todayLatest.diastolic}</Text>
                   <Text style={styles.bpUnit}>mmHg</Text>
                 </View>
                 <View style={styles.spacer} />
@@ -329,14 +329,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Manrope_800ExtraBold',
     fontSize: 48,
     letterSpacing: -2,
-    flexShrink: 1,
   },
   bpNumberBlack: {
     fontFamily: 'Manrope_800ExtraBold',
     fontSize: 48,
     color: colors.textDark,
     letterSpacing: -2,
-    flexShrink: 1,
   },
   bpSlash: {
     fontFamily: 'Manrope_700Bold',
