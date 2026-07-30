@@ -48,3 +48,14 @@ export const clearRecords = async () => {
     console.error('Error clearing records', error);
   }
 };
+
+export const deleteRecord = async (id: string) => {
+  try {
+    const existingRecords = await getRecords();
+    const updatedRecords = existingRecords.filter(r => r.id !== id);
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedRecords));
+  } catch (error) {
+    console.error('Error deleting record', error);
+    throw error;
+  }
+};

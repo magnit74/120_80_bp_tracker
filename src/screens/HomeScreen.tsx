@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, Alert } from 'react-native';
 import { useNavigation, useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +14,7 @@ import { CallOfferCard } from '../components/CallOfferCard';
 import { RatingPrompt } from '../components/RatingPrompt';
 import { DailyHealthTip } from '../components/DailyHealthTip';
 import { HeartPulseIcon, ClockIcon, ShieldIcon, ChartIcon } from '../components/Icons';
-import { getRecords, BloodPressureRecord } from '../store/storage';
+import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
 import { shouldShowReviewPrompt } from '../services/reviewService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
@@ -74,6 +74,24 @@ export const HomeScreen = () => {
     }
   };
 
+  const handleDeleteRecord = (id: string) => {
+    Alert.alert(
+      "Delete Record",
+      "Are you sure you want to delete this reading?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            await deleteRecord(id);
+            await loadRecords();
+          }
+        }
+      ]
+    );
+  };
+
   const today = new Date();
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const formattedDate = `${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
@@ -124,7 +142,8 @@ export const HomeScreen = () => {
               systolic={todayLatest.systolic} 
               diastolic={todayLatest.diastolic} 
               pulse={todayLatest.pulse} 
-              time={formatFullDate(todayLatest.timestamp)} 
+              time={`Today, ${formatTime(todayLatest.timestamp)}`}
+              onDelete={() => handleDeleteRecord(todayLatest.id)}
             />
           </Animated.View>
         ) : (
@@ -232,6 +251,7 @@ export const HomeScreen = () => {
                     diastolic={record.diastolic} 
                     pulse={record.pulse} 
                     time={`${dateStr}, ${timeStr}`} 
+                    onDelete={() => handleDeleteRecord(record.id)}
                   />
                 </Animated.View>
               );

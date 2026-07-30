@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Dimensions, ScrollView, Alert } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import Svg, { Path, Defs, LinearGradient, Stop, Circle, Line, Text as SvgText } from 'react-native-svg';
 import * as shape from 'd3-shape';
@@ -12,7 +12,7 @@ import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
 import { typography } from '../theme/typography';
-import { getRecords, BloodPressureRecord } from '../store/storage';
+import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { RecordCard } from '../components/RecordCard';
 
@@ -62,7 +62,25 @@ export const AnalyticsScreen = () => {
     setRecords(currentFilteredRecords.slice(-14)); // Show max 14 points for clarity
 
     pathProgress.value = 0;
-    pathProgress.value = withDelay(200, withTiming(1, { duration: 1200, easing: Easing.out(Easing.cubic) }));
+    pathProgress.value = withDelay(150, withTiming(1, { duration: 1500, easing: Easing.bezier(0.25, 1, 0.5, 1) }));
+  };
+
+  const handleDeleteRecord = (id: string) => {
+    Alert.alert(
+      "Delete Record",
+      "Are you sure you want to delete this reading?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete", 
+          style: "destructive",
+          onPress: async () => {
+            await deleteRecord(id);
+            await loadData();
+          }
+        }
+      ]
+    );
   };
 
   const getScales = () => {
@@ -435,7 +453,8 @@ export const AnalyticsScreen = () => {
                 systolic={record.systolic} 
                 diastolic={record.diastolic} 
                 pulse={record.pulse} 
-                time={`${dateStr} at ${timeStr}${record.tags.length > 0 ? ' · ' + record.tags[0] : ''}`} 
+                time={`${dateStr}, ${timeStr}`} 
+                onDelete={() => handleDeleteRecord(record.id)}
               />
             </Animated.View>
           );

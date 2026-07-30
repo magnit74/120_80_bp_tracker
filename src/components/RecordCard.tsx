@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { View, Text, StyleSheet, Pressable, PressableProps } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
 import { shadows } from '../theme/shadows';
@@ -9,9 +10,9 @@ import { HeartPulseIcon } from './Icons';
 export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
   diastolic: number;
-  pulse: number;
   time: string;
   style?: any;
+  onDelete?: () => void;
 }
 
 export const RecordCard: React.FC<RecordCardProps> = ({
@@ -21,8 +22,8 @@ export const RecordCard: React.FC<RecordCardProps> = ({
   time,
   style,
   onPress,
-  onPressIn,
   onPressOut,
+  onDelete,
   ...props
 }) => {
   const scale = useSharedValue(1);
@@ -58,38 +59,49 @@ export const RecordCard: React.FC<RecordCardProps> = ({
     if (onPressOut) onPressOut(e);
   }, [onPressOut, scale]);
 
+  const renderRightActions = () => {
+    if (!onDelete) return null;
+    return (
+      <Pressable style={styles.deleteButton} onPress={onDelete}>
+        <Text style={styles.deleteText}>Delete</Text>
+      </Pressable>
+    );
+  };
+
   return (
     <Animated.View style={[animatedStyle, style]}>
-      <Pressable
-        style={styles.card}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        onPress={onPress}
-        {...props}
-      >
-      <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
-      
-      <View style={styles.timeSection}>
-        <Text style={styles.timeText}>{time}</Text>
-      </View>
+      <Swipeable renderRightActions={renderRightActions}>
+        <Pressable
+          style={styles.card}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          onPress={onPress}
+          {...props}
+        >
+        <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+        
+        <View style={styles.timeSection}>
+          <Text style={styles.timeText}>{time}</Text>
+        </View>
 
-      <View style={styles.bpSection}>
-        <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
-        <Text style={styles.bpSlash}>/</Text>
-        <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
-      </View>
+        <View style={styles.bpSection}>
+          <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
+          <Text style={styles.bpSlash}>/</Text>
+          <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
+        </View>
 
-      <View style={styles.statusBadge}>
-        <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
-      </View>
+        <View style={styles.statusBadge}>
+          <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
+        </View>
 
-      <View style={styles.pulseSection}>
-        <HeartPulseIcon size={14} color={colors.pulse} />
-        <Text style={styles.pulseValue}>{pulse}</Text>
-      </View>
-      
-      <Text style={styles.arrow}>›</Text>
-      </Pressable>
+        <View style={styles.pulseSection}>
+          <HeartPulseIcon size={14} color={colors.pulse} />
+          <Text style={styles.pulseValue}>{pulse}</Text>
+        </View>
+        
+        <Text style={styles.arrow}>›</Text>
+        </Pressable>
+      </Swipeable>
     </Animated.View>
   );
 };
@@ -162,14 +174,30 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   pulseValue: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 16,
-    color: colors.textDark,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: colors.pulse,
+    marginLeft: 6,
   },
   arrow: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 22,
-    color: colors.textLight,
-    marginTop: -2,
-  }
+    fontSize: 20,
+    color: colors.textMuted,
+    marginLeft: 10,
+  },
+  deleteButton: {
+    backgroundColor: colors.danger,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderTopRightRadius: 18,
+    borderBottomRightRadius: 18,
+    marginBottom: 10,
+  },
+  deleteText: {
+    color: colors.white,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+  },
 });
