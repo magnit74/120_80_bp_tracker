@@ -10,6 +10,7 @@ import { HeartPulseIcon } from './Icons';
 export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
   diastolic: number;
+  pulse: number;
   time: string;
   style?: any;
   onDelete?: () => void;
@@ -22,6 +23,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({
   time,
   style,
   onPress,
+  onPressIn,
   onPressOut,
   onDelete,
   ...props
@@ -78,28 +80,28 @@ export const RecordCard: React.FC<RecordCardProps> = ({
           onPress={onPress}
           {...props}
         >
-        <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
-        
-        <View style={styles.timeSection}>
-          <Text style={styles.timeText}>{time}</Text>
-        </View>
+          <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+          
+          <View style={styles.timeSection}>
+            <Text style={styles.timeText}>{time}</Text>
+          </View>
 
-        <View style={styles.bpSection}>
-          <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
-          <Text style={styles.bpSlash}>/</Text>
-          <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
-        </View>
+          <View style={styles.bpSection}>
+            <Text style={[styles.bpNumber, { color: getStatusColor() }]} adjustsFontSizeToFit numberOfLines={1}>{systolic}</Text>
+            <Text style={styles.bpSlash}>/</Text>
+            <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
+          </View>
 
-        <View style={styles.statusBadge}>
-          <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
-        </View>
+          <View style={styles.statusBadge}>
+            <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
+          </View>
 
-        <View style={styles.pulseSection}>
-          <HeartPulseIcon size={14} color={colors.pulse} />
-          <Text style={styles.pulseValue}>{pulse}</Text>
-        </View>
-        
-        <Text style={styles.arrow}>›</Text>
+          <View style={styles.pulseSection}>
+            <HeartPulseIcon size={14} color={colors.pulse} />
+            <Text style={styles.pulseValue}>{pulse}</Text>
+          </View>
+          
+          <Text style={styles.arrow}>›</Text>
         </Pressable>
       </Swipeable>
     </Animated.View>
@@ -108,69 +110,64 @@ export const RecordCard: React.FC<RecordCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.white,
     borderRadius: 18,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 10,
-    paddingVertical: 16,
-    paddingHorizontal: 14,
-    ...shadows.md,
+    ...shadows.sm,
   },
   statusDot: {
     width: 6,
-    height: 6,
+    height: 32,
     borderRadius: 3,
-    marginRight: 10,
-  },
-  badgeDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    marginRight: 14,
   },
   timeSection: {
-    width: 75,
+    flex: 1,
   },
   timeText: {
     fontFamily: 'Inter_500Medium',
     fontSize: 14,
-    color: colors.textMedium,
+    color: colors.textMuted,
   },
   bpSection: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'baseline',
-    marginLeft: 8,
+    justifyContent: 'center',
+    flex: 1.5,
   },
   bpNumber: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 22,
+    fontSize: 26,
     letterSpacing: -0.5,
   },
   bpSlash: {
     fontFamily: 'Manrope_700Bold',
     fontSize: 18,
-    color: colors.textLight,
+    color: colors.textMuted,
     marginHorizontal: 2,
   },
   bpDiastolic: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 22,
+    fontFamily: 'Manrope_700Bold',
+    fontSize: 18,
     color: colors.textDark,
-    letterSpacing: -0.5,
   },
   statusBadge: {
-    flexDirection: 'row',
+    flex: 0.5,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginLeft: 'auto',
-    width: 24,
-    height: 24,
+  },
+  badgeDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   pulseSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    justifyContent: 'flex-end',
+    flex: 1,
     marginRight: 8,
   },
   pulseValue: {
