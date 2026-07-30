@@ -80,25 +80,26 @@ export const RecordCard: React.FC<RecordCardProps> = ({
           <View style={styles.contentContainer}>
             <Text style={styles.timeText}>{time}</Text>
             
-            <View style={styles.bpRow}>
-              <Text style={[styles.systolic, { color: getStatusColor() }]}>{systolic}</Text>
-              <Text style={styles.slash}>/</Text>
-              <Text style={styles.diastolic}>{diastolic}</Text>
-              <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+            <View style={styles.dataRow}>
+              <View style={styles.bpRow}>
+                <Text style={[styles.systolic, { color: getStatusColor() }]}>{systolic}</Text>
+                <Text style={styles.slash}>/</Text>
+                <Text style={styles.diastolic}>{diastolic}</Text>
+                <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+              </View>
+
+              {/* Pulse block */}
+              <View style={styles.pulseContainer}>
+                <HeartPulseIcon size={16} color={colors.pulse} />
+                <Text style={styles.pulseValue}>{pulse}</Text>
+              </View>
+              
+              {/* Swipe hint */}
+              <View style={styles.dragHandle}>
+                <GripIcon size={20} color="#D1D5DB" />
+              </View>
             </View>
           </View>
-
-          {/* Pulse block */}
-          <View style={styles.pulseContainer}>
-            <HeartPulseIcon size={16} color={colors.pulse} />
-            <Text style={styles.pulseValue}>{pulse}</Text>
-          </View>
-          
-          {/* Swipe hint */}
-          <View style={styles.dragHandle}>
-            <GripIcon size={20} color="#D1D5DB" />
-          </View>
-
         </Pressable>
       </Swipeable>
     </Animated.View>
@@ -134,6 +135,11 @@ const styles = StyleSheet.create({
     marginBottom: 2,
     letterSpacing: 0.2,
   },
+  dataRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   bpRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -143,8 +149,6 @@ const styles = StyleSheet.create({
     fontSize: 32,
     letterSpacing: -1,
     fontVariant: ['tabular-nums'],
-    width: 62, // fixed width for 3 digits max
-    textAlign: 'right',
   },
   slash: {
     fontFamily: 'Manrope_700Bold',
@@ -158,8 +162,6 @@ const styles = StyleSheet.create({
     fontSize: 24,
     color: '#111827', // almost black
     fontVariant: ['tabular-nums'],
-    width: 42, // fixed width for up to 3 digits
-    textAlign: 'left',
     transform: [{ translateY: 2 }],
   },
   statusDot: {
@@ -172,9 +174,7 @@ const styles = StyleSheet.create({
   pulseContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: 58, // fixed width block
     justifyContent: 'flex-start',
-    marginLeft: 10,
   },
   pulseValue: {
     fontFamily: 'Inter_700Bold',
