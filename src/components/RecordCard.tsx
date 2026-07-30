@@ -79,8 +79,8 @@ export const RecordCard: React.FC<RecordCardProps> = ({
         <Text style={styles.bpDiastolic} adjustsFontSizeToFit numberOfLines={1}>{diastolic}</Text>
       </View>
 
-      <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
-        <Text style={[styles.statusText, { color: getStatusColor() }]}>{getStatusLabel()}</Text>
+      <View style={styles.statusBadge}>
+        <View style={[styles.badgeDot, { backgroundColor: getStatusColor() }]} />
       </View>
 
       <View style={styles.pulseSection}>
@@ -110,6 +110,11 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     marginRight: 10,
+  },
+  badgeDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   timeSection: {
     width: 75,
@@ -143,14 +148,12 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-    marginRight: 12,
-  },
-  statusText: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 'auto',
+    width: 24,
+    height: 24,
   },
   pulseSection: {
     flexDirection: 'row',

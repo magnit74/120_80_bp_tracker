@@ -120,36 +120,12 @@ export const HomeScreen = () => {
             entering={FadeInDown.delay(150).duration(500)}
             style={styles.heroSection}
           >
-            <LinearGradient 
-              colors={getHeroGradient(todayLatest.systolic, todayLatest.diastolic)}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.heroCard}
-            >
-              <View style={styles.lastReadingLabel}>
-                <View style={[styles.statusPill, { backgroundColor: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color + '25' }]}>
-                  <Text style={[styles.statusText, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]}>
-                    {getBPStatus(todayLatest.systolic, todayLatest.diastolic).label}
-                  </Text>
-                </View>
-                <Text style={styles.lastReadingTime}>{formatFullDate(todayLatest.timestamp)}</Text>
-              </View>
-              
-              <View style={styles.metricsRow}>
-                <View style={styles.bpRow}>
-                  <Text style={[styles.bpNumber, { color: getBPStatus(todayLatest.systolic, todayLatest.diastolic).color }]} adjustsFontSizeToFit numberOfLines={1}>{todayLatest.systolic}</Text>
-                  <Text style={styles.bpSlash}>/</Text>
-                  <Text style={styles.bpNumberBlack} adjustsFontSizeToFit numberOfLines={1}>{todayLatest.diastolic}</Text>
-                  <Text style={styles.bpUnit}>mmHg</Text>
-                </View>
-                <View style={styles.spacer} />
-                <View style={styles.hrContainer}>
-                  <HeartPulseIcon size={14} color={colors.pulse} />
-                  <Text style={styles.hrNumber}>{todayLatest.pulse}</Text>
-                  <Text style={styles.hrLabel}>bpm</Text>
-                </View>
-              </View>
-            </LinearGradient>
+            <RecordCard 
+              systolic={todayLatest.systolic} 
+              diastolic={todayLatest.diastolic} 
+              pulse={todayLatest.pulse} 
+              time={formatFullDate(todayLatest.timestamp)} 
+            />
           </Animated.View>
         ) : (
           <Animated.View
@@ -290,27 +266,9 @@ const styles = StyleSheet.create({
     color: colors.textLight,
   },
   heroSection: {
-    marginBottom: 16,
-  },
-  heroCard: {
-    borderRadius: 24,
-    padding: 20,
-    ...shadows.lg,
-  },
-  lastReadingLabel: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  statusPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  statusText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    marginBottom: 8,
   },
   lastReadingTime: {
     fontFamily: 'Inter_400Regular',
@@ -321,50 +279,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
   },
-  bpRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-  },
-  bpNumber: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 48,
-    letterSpacing: -2,
-  },
-  bpNumberBlack: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 48,
-    color: colors.textDark,
-    letterSpacing: -2,
-  },
-  bpSlash: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 28,
-    color: colors.textLight,
-    marginHorizontal: 4,
-  },
-  bpUnit: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: colors.textLight,
-    marginLeft: 4,
-  },
-  spacer: {
-    flex: 1,
-  },
-  hrContainer: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.pulseGlow,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 16,
-  },
   hrNumber: {
-    fontFamily: 'Manrope_800ExtraBold',
+    fontFamily: 'Inter_700Bold',
     fontSize: 24,
     color: colors.textDark,
-    marginTop: 2,
+    marginLeft: 4,
   },
   hrLabel: {
     fontFamily: 'Inter_600SemiBold',
