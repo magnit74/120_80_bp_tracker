@@ -227,7 +227,7 @@ export const HomeScreen = () => {
         )}
 
         {records.length > 1 && (
-          <View style={styles.recentSection}>
+          <View style={[styles.recentSection, { marginTop: 24 }]}>
             <Animated.Text 
               entering={FadeInDown.delay(400).duration(400)}
               style={styles.recentLabel}
@@ -327,14 +327,16 @@ const styles = StyleSheet.create({
   },
   bpNumber: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 56,
-    letterSpacing: -3,
+    fontSize: 48,
+    letterSpacing: -2,
+    flexShrink: 1,
   },
   bpNumberBlack: {
     fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 56,
+    fontSize: 48,
     color: colors.textDark,
-    letterSpacing: -3,
+    letterSpacing: -2,
+    flexShrink: 1,
   },
   bpSlash: {
     fontFamily: 'Manrope_700Bold',

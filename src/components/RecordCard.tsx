@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   timeSection: {
-    width: 55,
+    width: 75,
   },
   timeText: {
     fontFamily: 'Inter_500Medium',
@@ -124,11 +124,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     marginLeft: 8,
+    flexShrink: 1,
   },
   bpNumber: {
     fontFamily: 'Manrope_800ExtraBold',
     fontSize: 22,
     letterSpacing: -0.5,
+    flexShrink: 1,
   },
   bpSlash: {
     fontFamily: 'Manrope_700Bold',
@@ -141,6 +143,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     color: colors.textDark,
     letterSpacing: -0.5,
+    flexShrink: 1,
   },
   statusBadge: {
     paddingHorizontal: 10,
