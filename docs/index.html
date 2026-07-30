@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,132 +7,153 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            light: '#14B8A6',
+                            DEFAULT: '#0F766E',
+                            dark: '#0F172A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary: #0F766E;
-            --primary-light: #14B8A6;
-            --dark: #0F172A;
-            --text: #475569;
-            --bg: #F8FAFC;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            padding: 40px 20px 80px 20px;
-            text-align: center;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 24px;
-            margin-bottom: 40px;
-        }
-        nav a {
-            color: rgba(255, 255, 255, 0.9);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: color 0.2s;
-        }
-        nav a:hover, nav a.active {
-            color: white;
-            text-decoration: underline;
-        }
-        h1 {
-            font-family: 'Manrope', sans-serif;
-            font-weight: 800;
-            font-size: 3rem;
-            margin: 0 0 16px 0;
-        }
-        .subtitle {
-            font-size: 1.25rem;
-            max-width: 600px;
-            margin: 0 auto 32px auto;
-            opacity: 0.9;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-            margin-top: -40px;
-        }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            text-align: center;
-        }
-        .card h3 {
-            color: var(--dark);
-            margin-top: 0;
-        }
-        footer {
-            text-align: center;
-            padding: 40px 20px;
-            color: #94A3B8;
-            font-size: 0.875rem;
-        }
-        .links {
-            margin-top: 16px;
-        }
-        .links a {
-            color: var(--primary);
-            text-decoration: none;
-            margin: 0 12px;
-            font-weight: 500;
-        }
-        .links a:hover {
-            text-decoration: underline;
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="index.html" class="active">Home</a>
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="support.html">Support</a>
-        </nav>
-        <h1>120/80 BP Tracker</h1>
-        <p class="subtitle">Your ultimate blood pressure and heart rate companion. Track, analyze, and improve your cardiovascular health daily.</p>
-    </header>
-
-    <div class="container">
-        <div class="features">
-            <div class="card">
-                <h3>Track Daily</h3>
-                <p>Log your systolic and diastolic blood pressure along with your pulse in just a few taps.</p>
-            </div>
-            <div class="card">
-                <h3>Stay Healthy</h3>
-                <p>Receive daily health tips, actionable insights, and check if you qualify for health benefits.</p>
-            </div>
-            <div class="card">
-                <h3>See Progress</h3>
-                <p>Visualize your BP trends over time with beautiful interactive charts and metrics.</p>
+<body class="bg-slate-50 text-slate-600 font-sans antialiased">
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-200/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-heading font-bold text-sm">BP</div>
+                    <span class="font-heading font-bold text-xl text-primary-dark">120/80 Tracker</span>
+                </div>
+                <div class="flex space-x-8">
+                    <a href="index.html" class="text-primary font-semibold hover:text-primary-light transition-colors">Home</a>
+                    <a href="privacy.html" class="text-slate-500 hover:text-primary transition-colors font-medium">Privacy</a>
+                    <a href="support.html" class="text-slate-500 hover:text-primary transition-colors font-medium">Support</a>
+                </div>
             </div>
         </div>
-    </div>
+    </nav>
 
-    <footer>
-        <p>&copy; 2026 120/80 BP Tracker. All rights reserved.</p>
-        <div class="links">
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="support.html">Support</a>
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="lg:grid lg:grid-cols-12 lg:gap-8 items-center">
+                <div class="sm:text-center md:max-w-2xl md:mx-auto lg:col-span-6 lg:text-left">
+                    <h1 class="font-heading text-5xl tracking-tight font-extrabold text-primary-dark sm:text-6xl xl:text-7xl">
+                        Your heart health, <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">beautifully clear.</span>
+                    </h1>
+                    <p class="mt-6 text-lg sm:text-xl text-slate-500 max-w-xl mx-auto lg:mx-0">
+                        Track your blood pressure, monitor heart rate, and get actionable health insights daily. No accounts required. 100% private and on-device.
+                    </p>
+                    <div class="mt-8 flex gap-4 justify-center lg:justify-start">
+                        <a href="support.html" class="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full text-white bg-primary hover:bg-primary-light transition-all shadow-lg shadow-primary/30">
+                            Get Support
+                        </a>
+                        <a href="#features" class="inline-flex items-center justify-center px-8 py-4 border border-slate-200 text-base font-medium rounded-full text-slate-700 bg-white hover:bg-slate-50 transition-all">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+                <div class="mt-16 lg:mt-0 lg:col-span-6 relative">
+                    <div class="absolute inset-0 bg-gradient-to-tr from-primary-light/20 to-transparent rounded-full blur-3xl scale-150"></div>
+                    <img src="assets/hero_bp.jpg" alt="120/80 BP Tracker Hero" class="relative z-10 w-full object-contain rounded-3xl shadow-2xl transform hover:-translate-y-2 transition-transform duration-500">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-base text-primary font-semibold tracking-wide uppercase">Features</h2>
+                <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-primary-dark sm:text-4xl">
+                    Everything you need for a healthy heart.
+                </p>
+            </div>
+
+            <div class="lg:grid lg:grid-cols-12 lg:gap-16 items-center">
+                <div class="lg:col-span-5 mb-12 lg:mb-0">
+                    <img src="assets/features_bp.jpg" alt="Health Analytics" class="w-full rounded-2xl shadow-xl border border-slate-100">
+                </div>
+                <div class="lg:col-span-7">
+                    <dl class="space-y-10">
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-xl bg-primary-light text-white">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                </div>
+                                <p class="ml-16 text-xl leading-6 font-bold text-primary-dark font-heading">Lightning Fast Logging</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-slate-500">
+                                Log your systolic and diastolic pressure, along with your pulse, in seconds using our custom-built numpad.
+                            </dd>
+                        </div>
+
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-xl bg-primary-light text-white">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                    </svg>
+                                </div>
+                                <p class="ml-16 text-xl leading-6 font-bold text-primary-dark font-heading">Deep Analytics</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-slate-500">
+                                Visualize your blood pressure trends with beautiful, interactive charts. Spot patterns and make informed decisions.
+                            </dd>
+                        </div>
+
+                        <div class="relative">
+                            <dt>
+                                <div class="absolute flex items-center justify-center h-12 w-12 rounded-xl bg-primary-light text-white">
+                                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <p class="ml-16 text-xl leading-6 font-bold text-primary-dark font-heading">Privacy First</p>
+                            </dt>
+                            <dd class="mt-2 ml-16 text-base text-slate-500">
+                                Your health data is yours. We never send it to the cloud. Everything is stored locally on your device for ultimate security.
+                            </dd>
+                        </div>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 border-t border-slate-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-base text-slate-400">&copy; 2026 120/80 BP Tracker. All rights reserved.</p>
+            <div class="mt-4 flex justify-center space-x-6">
+                <a href="privacy.html" class="text-slate-400 hover:text-primary transition-colors">Privacy Policy</a>
+                <a href="support.html" class="text-slate-400 hover:text-primary transition-colors">Support</a>
+            </div>
         </div>
     </footer>
 </body>

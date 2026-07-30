@@ -1,46 +1,126 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Support - 120/80 BP Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Manrope', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            light: '#14B8A6',
+                            DEFAULT: '#0F766E',
+                            dark: '#0F172A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root { --primary: #0F766E; --dark: #0F172A; --text: #475569; --bg: #F8FAFC; }
-        body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; background-color: var(--bg); color: var(--text); line-height: 1.6; }
-        header { background-color: white; padding: 20px; border-bottom: 1px solid #E2E8F0; }
-        nav { display: flex; justify-content: center; gap: 24px; max-width: 800px; margin: 0 auto; }
-        nav a { color: var(--text); text-decoration: none; font-weight: 500; font-size: 1rem; transition: color 0.2s; }
-        nav a:hover, nav a.active { color: var(--primary); font-weight: 600; }
-        .container { max-width: 600px; margin: 40px auto; padding: 40px; background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        h1 { color: var(--dark); margin-top: 0; }
-        .contact-card { background-color: #F0FDF4; border-left: 4px solid var(--primary); padding: 16px 20px; border-radius: 4px; margin-top: 24px; }
-        .contact-card a { color: var(--primary); font-weight: bold; text-decoration: none; }
+        .glass {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
     </style>
 </head>
-<body>
-    <header>
-        <nav>
-            <a href="index.html">Home</a>
-            <a href="privacy.html">Privacy Policy</a>
-            <a href="support.html" class="active">Support</a>
-        </nav>
-    </header>
-    <div class="container">
-        <h1>App Support</h1>
-        <p>We're here to help! If you have any questions, feedback, or run into issues using the 120/80 BP Tracker app, please reach out to us.</p>
-        
-        <div class="contact-card">
-            <p style="margin: 0;"><strong>Email us directly:</strong> <br>
-            <a href="mailto:support@magnit74.github.io">support@magnit74.github.io</a></p>
+<body class="bg-slate-50 text-slate-600 font-sans antialiased">
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 glass border-b border-slate-200/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-primary-light flex items-center justify-center text-white font-heading font-bold text-sm">BP</div>
+                    <span class="font-heading font-bold text-xl text-primary-dark">120/80 Tracker</span>
+                </div>
+                <div class="flex space-x-8">
+                    <a href="index.html" class="text-slate-500 hover:text-primary transition-colors font-medium">Home</a>
+                    <a href="privacy.html" class="text-slate-500 hover:text-primary transition-colors font-medium">Privacy</a>
+                    <a href="support.html" class="text-primary font-semibold hover:text-primary-light transition-colors">Support</a>
+                </div>
+            </div>
         </div>
+    </nav>
 
-        <h3 style="margin-top: 32px; color: var(--dark);">Frequently Asked Questions</h3>
-        <p><strong>Where is my data saved?</strong><br>
-        All your data is saved securely on your device. We do not sync it to any external servers.</p>
-        
-        <p><strong>How do I export my data?</strong><br>
-        Go to the Analytics tab in the app and tap "Export PDF Report" to generate and share a report.</p>
-    </div>
+    <!-- Content -->
+    <main class="pt-32 pb-20">
+        <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <div class="text-center mb-12">
+                <h1 class="font-heading text-4xl sm:text-5xl font-extrabold text-primary-dark mb-4">How can we help?</h1>
+                <p class="text-lg text-slate-500">Send us a message and we'll get back to you as soon as possible.</p>
+            </div>
+
+            <div class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 p-8 sm:p-10 border border-slate-100 mb-12">
+                <!-- Working Form powered by FormSubmit.co -->
+                <form action="https://formsubmit.co/magnit74@mail.ru" method="POST" class="space-y-6">
+                    
+                    <!-- FormSubmit Configuration -->
+                    <input type="hidden" name="_subject" value="New Support Request for 120/80 App!">
+                    <input type="hidden" name="_template" value="table">
+                    
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-slate-700 mb-2">Your Name</label>
+                            <input type="text" name="name" id="name" required
+                                class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-slate-900"
+                                placeholder="John Doe">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                            <input type="email" name="email" id="email" required
+                                class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-slate-900"
+                                placeholder="john@example.com">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-slate-700 mb-2">Message</label>
+                        <textarea id="message" name="message" rows="5" required
+                            class="w-full rounded-xl border border-slate-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-shadow text-slate-900 resize-none"
+                            placeholder="How can we assist you today?"></textarea>
+                    </div>
+
+                    <div>
+                        <button type="submit" 
+                            class="w-full sm:w-auto inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-xl text-white bg-primary hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all shadow-lg shadow-primary/30">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div class="bg-teal-50 rounded-2xl p-6 border border-teal-100">
+                    <h3 class="font-heading font-bold text-primary-dark mb-2">Data Privacy</h3>
+                    <p class="text-sm text-teal-800">Your health data is stored locally. We cannot recover lost data if you delete the app without exporting it first.</p>
+                </div>
+                <div class="bg-teal-50 rounded-2xl p-6 border border-teal-100">
+                    <h3 class="font-heading font-bold text-primary-dark mb-2">Direct Contact</h3>
+                    <p class="text-sm text-teal-800">If you prefer email, you can reach us directly at <a href="mailto:magnit74@mail.ru" class="font-bold text-primary hover:underline">magnit74@mail.ru</a></p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-50 border-t border-slate-200 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-base text-slate-400">&copy; 2026 120/80 BP Tracker. All rights reserved.</p>
+        </div>
+    </footer>
 </body>
 </html>
