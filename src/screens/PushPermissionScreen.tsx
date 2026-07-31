@@ -1,110 +1,272 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { BellIcon } from '../components/Icons'; // Create or use an existing icon
+import { requestNotificationPermission, scheduleDailyReminder } from '../services/notificationService';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'PushPermission'>;
 
 export default function PushPermissionScreen() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const [isRequesting, setIsRequesting] = useState(false);
 
   const handleAllow = async () => {
-    // In a real app, request push notification permissions here
-    await AsyncStorage.setItem('pushPermissionAsked', 'true');
-    navigation.replace('OfferDetail' as any); // Proceed to offer or main
+    setIsRequesting(true);
+    try {
+      const granted = await requestNotificationPermission();
+      
+      await AsyncStorage.setItem('pushPermissionSeen', 'true');
+      
+      if (granted) {
+        await AsyncStorage.setItem('notificationsEnabled', 'true');
+        // Default reminders if granted
+        const morningTime = new Date(); morningTime.setHours(9,0,0,0);
+        await AsyncStorage.setItem('morningTime', morningTime.toISOString());
+        await scheduleDailyReminder(morningTime, 'morning_reminder', 'Time for a check-up! 🩺', 'Good morning! Taking a quick blood pressure reading starts your day right.');
+      } else {
+        await AsyncStorage.setItem('notificationsEnabled', 'false');
+      }
+
+      navigation.replace('Main' as any);
+    } catch (error) {
+      await AsyncStorage.setItem('pushPermissionSeen', 'true');
+      await AsyncStorage.setItem('notificationsEnabled', 'false');
+      navigation.replace('Main' as any);
+    } finally {
+      setIsRequesting(false);
+    }
   };
 
   const handleSkip = async () => {
-    await AsyncStorage.setItem('pushPermissionAsked', 'true');
-    navigation.replace('OfferDetail' as any);
+    await AsyncStorage.setItem('pushPermissionSeen', 'true');
+    await AsyncStorage.setItem('notificationsEnabled', 'false');
+    navigation.replace('Main' as any);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.content, { paddingTop: insets.top + 60 }]}>
-        <View style={styles.iconContainer}>
-          <BellIcon size={48} color={colors.primary} />
+    <LinearGradient colors={['#ffffff', '#F4F7FA']} style={styles.container}>
+      <View style={[styles.content, { paddingTop: insets.top + 32 }]}>
+        <View style={styles.imageContainer}>
+          <Image 
+            source={require('../../assets/images/push_bell.png')} 
+            style={styles.image} 
+            resizeMode="contain" 
+          />
         </View>
-        
-        <Text style={styles.title}>Never Miss a Reading</Text>
-        <Text style={styles.description}>
-          Enable notifications to get daily reminders for your blood pressure measurements and health tips.
-        </Text>
       </View>
 
-      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleAllow} activeOpacity={0.9}>
-          <Text style={styles.primaryButtonText}>Allow Notifications</Text>
+      <View style={[styles.bottomSheet, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <Text style={styles.title}>Stay on Track</Text>
+        <Text style={styles.description}>
+          Get reminders to log your pressure twice a day for better accuracy.
+        </Text>
+
+        <View style={styles.cardsContainer}>
+          <View style={styles.reminderCard}>
+            <View style={styles.cardLeft}>
+              <View style={styles.cardIconBox}>
+                <MaterialIcons name="wb-sunny" size={20} color="#43A047" />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Morning</Text>
+                <Text style={styles.cardTime}>9:00 AM</Text>
+              </View>
+            </View>
+            <View style={styles.toggleActive}>
+              <View style={styles.toggleKnob} />
+            </View>
+          </View>
+
+          <View style={styles.reminderCard}>
+            <View style={styles.cardLeft}>
+              <View style={styles.cardIconBox}>
+                <MaterialIcons name="bedtime" size={20} color="#43A047" />
+              </View>
+              <View>
+                <Text style={styles.cardTitle}>Evening</Text>
+                <Text style={styles.cardTime}>8:00 PM</Text>
+              </View>
+            </View>
+            <View style={styles.toggleActive}>
+              <View style={styles.toggleKnob} />
+            </View>
+          </View>
+        </View>
+
+        <TouchableOpacity 
+          style={styles.buttonWrapper} 
+          onPress={handleAllow} 
+          activeOpacity={0.9}
+          disabled={isRequesting}
+        >
+          <LinearGradient
+            colors={['#74D680', '#43A047']}
+            style={styles.buttonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.buttonText}>
+              {isRequesting ? 'Setting up...' : 'Enable Notifications'}
+            </Text>
+          </LinearGradient>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.secondaryButton} onPress={handleSkip} activeOpacity={0.9}>
-          <Text style={styles.secondaryButtonText}>Not Now</Text>
+        <TouchableOpacity style={styles.secondaryButton} onPress={handleSkip} activeOpacity={0.7}>
+          <Text style={styles.secondaryButtonText}>Maybe Later</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLowest,
   },
   content: {
     flex: 1,
     alignItems: 'center',
     paddingHorizontal: 32,
   },
-  iconContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.surfaceContainer,
+  imageContainer: {
+    width: 200,
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 32,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  bottomSheet: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 40,
+    elevation: 20,
+    alignItems: 'center',
   },
   title: {
-    ...typography.headlineLg,
-    color: colors.onSurface,
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 28,
+    color: '#111827',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
+    letterSpacing: -0.5,
   },
   description: {
-    ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14.5,
+    color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 28,
+    lineHeight: 22,
+    marginBottom: 24,
+    paddingHorizontal: 8,
   },
-  bottomContainer: {
-    paddingHorizontal: 24,
+  cardsContainer: {
     width: '100%',
+    maxWidth: 320,
+    gap: 12,
+    marginBottom: 32,
   },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 18,
+  reminderCard: {
+    backgroundColor: '#F4F7FA',
     borderRadius: 16,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(243,244,246,0.5)',
+  },
+  cardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cardIconBox: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    color: '#111827',
+  },
+  cardTime: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    color: '#6B7280',
+    marginTop: 2,
+  },
+  toggleActive: {
+    width: 48,
+    height: 24,
+    backgroundColor: '#43A047',
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  toggleKnob: {
+    width: 16,
+    height: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    alignSelf: 'flex-end',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  buttonWrapper: {
+    width: '100%',
+    maxWidth: 320,
+    shadowColor: '#4AA981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 25,
+    elevation: 8,
+    borderRadius: 99,
     marginBottom: 16,
   },
-  primaryButtonText: {
-    ...typography.headlineSm,
-    color: colors.onPrimary,
+  buttonGradient: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderRadius: 99,
+  },
+  buttonText: {
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 18,
+    color: '#FFFFFF',
   },
   secondaryButton: {
-    paddingVertical: 16,
-    borderRadius: 16,
-    alignItems: 'center',
+    paddingVertical: 12,
   },
   secondaryButtonText: {
-    ...typography.labelLg,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#2b64c0',
   },
 });

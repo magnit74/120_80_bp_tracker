@@ -46,13 +46,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: colors.danger,
+    color: colors.premium.redTo,
     marginBottom: 12,
     textAlign: 'center',
   },
   message: {
     fontSize: 14,
-    color: colors.textMedium,
+    color: colors.premium.textMain,
     textAlign: 'center',
   },
 });

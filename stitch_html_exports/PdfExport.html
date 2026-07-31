@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Export</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; }
+        .app-container { max-width: 400px; margin: 0 auto; background: #F4F7FA; min-height: 100vh; position: relative; padding-bottom: 120px; box-shadow: 0 0 40px rgba(0,0,0,0.08); }
+    </style>
+</head>
+<body>
+    <div class="app-container flex flex-col pt-4">
+        <!-- Top Navigation Bar -->
+        <div class="flex items-center px-4 pb-4">
+            <button class="flex items-center text-[#CC202C] font-semibold text-[15px]">
+                <span class="material-icons text-[22px]">chevron_left</span> Back
+            </button>
+            <div class="flex-1 text-center font-[800] text-[16px] mr-12 text-[#111827]">Export</div>
+        </div>
+
+        <!-- Illustration -->
+        <div class="flex items-center justify-center px-8 mt-2 mb-6">
+            <img src="assets/pdf_document.png" alt="PDF Document" class="w-full max-w-[200px] object-contain drop-shadow-xl">
+        </div>
+
+        <!-- Text Content -->
+        <div class="px-8 text-center mb-6">
+            <h1 class="text-[26px] font-extrabold text-[#111827] leading-tight tracking-tight mb-3">
+                Generate Your Report
+            </h1>
+            <p class="text-[14px] text-[#6B7280] leading-relaxed font-medium">
+                Create a professional medical summary of your blood pressure and pulse trends to share with your doctor.
+            </p>
+        </div>
+
+        <!-- Options inside premium card -->
+        <div class="px-5">
+            <div class="bg-white rounded-[24px] p-2 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-100 flex flex-col gap-1.5">
+                <div class="bg-[#F0FDF4] rounded-[16px] p-4 flex justify-between items-center border border-[#4AA981]/30 cursor-pointer">
+                    <span class="font-[800] text-[14.5px] text-[#111827]">Last 7 Days</span>
+                    <div class="w-[22px] h-[22px] rounded-full border-[6px] border-[#4AA981] bg-white shadow-sm"></div>
+                </div>
+                
+                <div class="bg-transparent rounded-[16px] p-4 flex justify-between items-center border border-transparent hover:bg-gray-50 transition-colors cursor-pointer">
+                    <span class="font-[800] text-[14.5px] text-[#4B5563]">Last 30 Days</span>
+                    <div class="w-[22px] h-[22px] rounded-full border-2 border-gray-300"></div>
+                </div>
+                
+                <div class="bg-transparent rounded-[16px] p-4 flex justify-between items-center border border-transparent hover:bg-gray-50 transition-colors cursor-pointer">
+                    <span class="font-[800] text-[14.5px] text-[#4B5563]">Last 90 Days</span>
+                    <div class="w-[22px] h-[22px] rounded-full border-2 border-gray-300"></div>
+                </div>
+                
+                <div class="bg-transparent rounded-[16px] p-4 flex justify-between items-center border border-transparent hover:bg-gray-50 transition-colors cursor-pointer">
+                    <span class="font-[800] text-[14.5px] text-[#4B5563]">Custom Range...</span>
+                    <span class="material-icons text-gray-400">chevron_right</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fixed Bottom Section -->
+        <div class="fixed bottom-0 w-full max-w-[400px] bg-white/90 backdrop-blur-md pb-8 pt-4 px-5 z-20 left-1/2 -translate-x-1/2 border-t border-gray-100/50">
+            <button class="w-full max-w-[320px] mx-auto bg-gradient-to-r from-[#6bd173] to-[#43a047] text-white rounded-full py-[18px] flex items-center justify-center gap-2 shadow-[0_8px_25px_rgba(67,160,71,0.35)] active:scale-95 transition-transform">
+                <span class="material-icons text-[22px]">picture_as_pdf</span>
+                <span class="font-[800] text-[18px] leading-none py-1">Generate & Share PDF</span>
+            </button>
+        </div>
+    </div>
+</body>
+</html>

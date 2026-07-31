@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requestNotificationPermission, scheduleDailyReminder, cancelReminder } from '../services/notificationService';
 
@@ -14,9 +15,11 @@ import { HomeScreen } from '../screens/HomeScreen';
 import { AddEntryScreen } from '../screens/AddEntryScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
 import { AnalyticsScreen } from '../screens/AnalyticsScreen';
-import { OfferDetailScreen } from '../screens/OfferDetailScreen';
+import OfferPrelandScreen from '../screens/OfferPrelandScreen';
+import PdfExportScreen from '../screens/PdfExportScreen';
+import PushPermissionScreen from '../screens/PushPermissionScreen';
 import { colors } from '../theme/colors';
-import { HomeIcon, ChartIcon, PlusIcon, BellIcon, SunIcon, MoonIcon, CheckCircleIcon } from '../components/Icons';
+import { MaterialIcons } from '@expo/vector-icons';
 // requestFCMPermission imported lazily in PushPermissionScreen
 
 export type RootStackParamList = {
@@ -24,7 +27,8 @@ export type RootStackParamList = {
   PushPermission: undefined;
   Main: undefined;
   AddEntry: undefined;
-  OfferDetail: undefined;
+  OfferPreland: undefined;
+  PdfExport: undefined;
 };
 
 export type BottomTabParamList = {
@@ -53,20 +57,19 @@ const AddTabBarButton = ({ children, onPress }: any) => {
   };
 
   return (
-    <AnimatedTouchableOpacity
-      style={[styles.addButtonContainer, animatedStyle]}
-      onPress={onPress}
-      onPressIn={handlePressIn}
-      onPressOut={handlePressOut}
-      activeOpacity={0.9}
-    >
-      <LinearGradient
-        colors={[colors.gradientStart, colors.gradientEnd]}
-        style={styles.addButton}
+    <View style={styles.addButtonWrapper}>
+      <AnimatedTouchableOpacity
+        style={[styles.addButtonContainer, animatedStyle]}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.9}
       >
-        <PlusIcon size={32} color={colors.white} strokeWidth={3} />
-      </LinearGradient>
-    </AnimatedTouchableOpacity>
+        <View style={styles.addButton}>
+          <MaterialIcons name="add" size={32} color={colors.white} />
+        </View>
+      </AnimatedTouchableOpacity>
+    </View>
   );
 };
 
@@ -78,18 +81,17 @@ const MainTabs = () => {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textLight,
+        tabBarActiveTintColor: colors.design2.redAction,
+        tabBarInactiveTintColor: colors.design2.textMuted,
         tabBarStyle: [
           styles.tabBar,
           { 
-            height: 64 + insets.bottom,
-            paddingBottom: insets.bottom || 12,
-            marginHorizontal: 16,
-            marginBottom: insets.bottom > 0 ? 0 : 8,
+            height: 85 + insets.bottom,
+            paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
           },
         ],
         tabBarLabelStyle: styles.tabLabel,
+        tabBarItemStyle: { paddingTop: 12 },
       }}
     >
       <Tab.Screen 
@@ -98,7 +100,7 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color }) => (
-            <HomeIcon size={24} color={color} />
+            <MaterialIcons name="home" size={28} color={color} />
           ),
         }}
       />
@@ -122,136 +124,11 @@ const MainTabs = () => {
         options={{
           tabBarLabel: 'Analytics',
           tabBarIcon: ({ color }) => (
-            <ChartIcon size={24} color={color} />
+            <MaterialIcons name="bar-chart" size={28} color={color} />
           ),
         }}
       />
     </Tab.Navigator>
-  );
-};
-
-const PushPermissionScreen = () => {
-  const navigation = useNavigation<any>();
-  const insets = useSafeAreaInsets();
-  
-  const [morningEnabled, setMorningEnabled] = useState(true);
-  const [eveningEnabled, setEveningEnabled] = useState(true);
-  const [morningTime, setMorningTime] = useState(new Date(2024, 0, 1, 9, 0));
-  const [eveningTime, setEveningTime] = useState(new Date(2024, 0, 1, 21, 0));
-  const [showPicker, setShowPicker] = useState<'morning' | 'evening' | null>(null);
-  const [isRequesting, setIsRequesting] = useState(false);
-
-  const formatTime = (date: Date) => {
-    let hours = date.getHours();
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    return `${hours}:${minutes} ${ampm}`;
-  };
-
-  const handleTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
-    if (event.type === 'dismissed') {
-      setShowPicker(null);
-      return;
-    }
-    if (selectedDate) {
-      if (showPicker === 'morning') {
-        setMorningTime(selectedDate);
-      } else {
-        setEveningTime(selectedDate);
-      }
-    }
-    setShowPicker(null);
-  };
-
-  const handleContinue = async () => {
-    setIsRequesting(true);
-    try {
-      const granted = await requestNotificationPermission();
-      
-      await AsyncStorage.setItem('pushPermissionSeen', 'true');
-      await AsyncStorage.setItem('morningReminder', morningEnabled.toString());
-      await AsyncStorage.setItem('eveningReminder', eveningEnabled.toString());
-      
-      if (morningEnabled && granted) {
-        await AsyncStorage.setItem('morningTime', morningTime.toISOString());
-        await scheduleDailyReminder(morningTime, 'morning_reminder', 'Time for a check-up! 🩺', 'Good morning! Taking a quick blood pressure reading starts your day right.');
-      } else {
-        await cancelReminder('morning_reminder');
-      }
-      
-      if (eveningEnabled && granted) {
-        await AsyncStorage.setItem('eveningTime', eveningTime.toISOString());
-        await scheduleDailyReminder(eveningTime, 'evening_reminder', 'Evening BP Check 🌙', 'Take a moment to record your evening blood pressure for better health tracking.');
-      } else {
-        await cancelReminder('evening_reminder');
-      }
-
-      if (granted) {
-        await AsyncStorage.setItem('notificationsEnabled', 'true');
-      } else {
-        await AsyncStorage.setItem('notificationsEnabled', 'false');
-      }
-
-      navigation.replace('Main');
-    } catch (error) {
-      await AsyncStorage.setItem('pushPermissionSeen', 'true');
-      await AsyncStorage.setItem('notificationsEnabled', 'false');
-      navigation.replace('Main');
-    } finally {
-      setIsRequesting(false);
-    }
-  };
-
-  const handleSkip = async () => {
-    await AsyncStorage.setItem('pushPermissionSeen', 'true');
-    await AsyncStorage.setItem('morningReminder', 'false');
-    await AsyncStorage.setItem('eveningReminder', 'false');
-    await AsyncStorage.setItem('notificationsEnabled', 'false');
-    navigation.replace('Main');
-  };
-
-  return (
-    <View style={[pushStyles.container, { paddingTop: insets.top }]}>
-      <View style={pushStyles.content}>
-        <Animated.View entering={FadeIn.delay(100).duration(400)} style={pushStyles.iconContainer}>
-          <BellIcon size={48} color={colors.primary} />
-        </Animated.View>
-        
-        <Animated.Text entering={FadeInDown.delay(200).duration(400)} style={pushStyles.title}>
-          Don't Forget to Check Your Blood Pressure
-        </Animated.Text>
-        <Animated.Text entering={FadeInDown.delay(300).duration(400)} style={pushStyles.subtitle}>
-          We'll remind you twice a day (9:00 AM & 8:00 PM) to help you keep a healthy routine.
-        </Animated.Text>
-      </View>
-
-      <Animated.View entering={FadeInDown.delay(400).duration(400)} style={[pushStyles.footer, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity 
-          style={[pushStyles.button, isRequesting && pushStyles.buttonDisabled]} 
-          onPress={handleContinue}
-          activeOpacity={0.8}
-          disabled={isRequesting}
-        >
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
-            style={pushStyles.buttonGradient}
-          >
-            <Text style={pushStyles.buttonText}>
-              {isRequesting ? 'Setting up...' : 'Turn On Reminders'}
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={pushStyles.skipButton} 
-          onPress={handleSkip}
-          activeOpacity={0.7}
-        >
-          <Text style={pushStyles.skipText}>Not Now</Text>
-        </TouchableOpacity>
-      </Animated.View>
-    </View>
   );
 };
 
@@ -305,10 +182,18 @@ export const AppNavigator = () => {
           }}
         />
         <Stack.Screen 
-          name="OfferDetail" 
-          component={OfferDetailScreen}
+          name="OfferPreland" 
+          component={OfferPrelandScreen}
           options={{
             animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen 
+          name="PdfExport" 
+          component={PdfExportScreen}
+          options={{
+            animation: 'slide_from_bottom',
+            presentation: 'modal',
           }}
         />
       </Stack.Navigator>
@@ -319,169 +204,59 @@ export const AppNavigator = () => {
 const styles = StyleSheet.create({
   tabBar: {
     position: 'absolute',
-    backgroundColor: 'rgba(255,255,255,0.95)',
     borderTopWidth: 0,
-    borderRadius: 28,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    backgroundColor: colors.white,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
     shadowRadius: 20,
-    elevation: 8,
+    elevation: 10,
+    borderLeftWidth: 0,
+    borderRightWidth: 0,
+    borderBottomWidth: 0,
   },
   tabLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    marginTop: 4,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 12,
+    marginTop: -2,
+    marginBottom: 4,
+  },
+  addButtonWrapper: {
+    position: 'absolute',
+    top: -28,
+    left: '50%',
+    transform: [{ translateX: -36 }], // half of the 72px total width
+    width: 72,
+    height: 72,
+    backgroundColor: colors.white,
+    borderRadius: 36,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    elevation: 10,
+    zIndex: 10,
   },
   addButtonContainer: {
-    top: -16,
     justifyContent: 'center',
     alignItems: 'center',
   },
   addButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.design2.redAction,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    shadowColor: colors.design2.redAction,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
     elevation: 8,
   },
 });
 
-const pushStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center',
-  },
-  iconContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'center',
-    marginBottom: 32,
-  },
-  title: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    color: colors.textDark,
-    textAlign: 'center',
-    marginBottom: 12,
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: colors.textMedium,
-    textAlign: 'center',
-    lineHeight: 24,
-    marginBottom: 40,
-  },
-  optionsContainer: {
-    gap: 16,
-  },
-  optionCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1.5,
-    borderColor: colors.borderLight,
-  },
-  optionCardActive: {
-    borderColor: colors.primary,
-    backgroundColor: colors.primary + '08',
-  },
-  optionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-  },
-  optionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  optionIconActive: {
-    backgroundColor: colors.primary,
-  },
-  optionText: {
-    gap: 4,
-  },
-  optionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: colors.textDark,
-  },
-  optionTime: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 20,
-    color: colors.primary,
-  },
-  checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: colors.border,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  checkboxActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  hint: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textLight,
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  footer: {
-    paddingHorizontal: 24,
-  },
-  button: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    marginBottom: 12,
-  },
-  buttonGradient: {
-    paddingVertical: 18,
-    alignItems: 'center',
-    borderRadius: 16,
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
-  buttonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
-  },
-  skipButton: {
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  skipText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 16,
-    color: colors.textLight,
-  },
-});

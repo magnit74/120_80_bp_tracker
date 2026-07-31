@@ -4,9 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { HeartPulseIcon, GripIcon } from './Icons';
-import { shadows } from '../theme/shadows';
+import { HeartPulseIcon } from './Icons';
 
 export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
@@ -37,12 +35,14 @@ export const RecordCard: React.FC<RecordCardProps> = ({
     };
   });
 
-  const getStatusColor = () => {
-    if (systolic >= 140 || diastolic >= 90) return colors.danger;
-    if (systolic >= 130 || diastolic > 80) return colors.warning;
-    if (systolic > 120) return colors.warning; // Elevated
-    return colors.success;
+  const getStatusInfo = () => {
+    if (systolic >= 140 || diastolic >= 90) return { label: 'High', color: colors.premium.redTo, bg: 'rgba(204,32,44,0.1)' };
+    if (systolic >= 130 || diastolic > 80) return { label: 'Elevated', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' };
+    if (systolic > 120) return { label: 'Elevated', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)' }; 
+    return { label: 'Normal', color: colors.premium.greenTo, bg: 'rgba(116,214,128,0.2)' };
   };
+
+  const status = getStatusInfo();
 
   const handlePressIn = useCallback((e: any) => {
     scale.value = withSpring(0.97, { damping: 15, stiffness: 300 });
@@ -74,27 +74,27 @@ export const RecordCard: React.FC<RecordCardProps> = ({
           onPress={onPress}
           {...props}
         >
-          <View style={[styles.statusLine, { backgroundColor: getStatusColor() }]} />
-          
-          <View style={styles.contentContainer}>
-            <Text style={styles.timeText}>{time}</Text>
-            
-            <View style={styles.dataRow}>
+          <View style={styles.leftContent}>
+            <View style={styles.iconBox}>
+              <HeartPulseIcon size={24} color={colors.premium.redTo} />
+            </View>
+            <View>
               <View style={styles.bpRow}>
-                <Text style={[styles.systolic, { color: getStatusColor() }]}>{systolic}</Text>
-                <Text style={styles.slash}>/</Text>
-                <Text style={styles.diastolic}>{diastolic}</Text>
-                <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
+                <Text style={styles.bpVal}>{systolic}</Text>
+                <Text style={styles.bpSlash}>/</Text>
+                <Text style={styles.bpVal}>{diastolic}</Text>
               </View>
+              <Text style={styles.timeText}>{time}</Text>
+            </View>
+          </View>
 
-              <View style={styles.pulseContainer}>
-                <HeartPulseIcon size={16} color={colors.pulse} />
-                <Text style={styles.pulseValue}>{pulse}</Text>
-              </View>
-              
-              <View style={styles.dragHandle}>
-                <GripIcon size={20} color={colors.outlineVariant} />
-              </View>
+          <View style={styles.rightContent}>
+            <View style={[styles.statusPill, { backgroundColor: status.bg }]}>
+              <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
+            </View>
+            <View style={styles.pulseRow}>
+              <HeartPulseIcon size={14} color={colors.premium.textMuted} />
+              <Text style={styles.pulseVal}>{pulse}</Text>
             </View>
           </View>
         </Pressable>
@@ -105,94 +105,93 @@ export const RecordCard: React.FC<RecordCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surfaceContainerLowest,
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingLeft: 20,
-    paddingRight: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    marginHorizontal: 0,
-    position: 'relative',
-    ...shadows.sm, // Soft shadow from Stitch
-  },
-  statusLine: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 6,
-    borderTopLeftRadius: 16,
-    borderBottomLeftRadius: 16,
-  },
-  contentContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  timeText: {
-    ...typography.labelMd,
-    color: colors.onSurfaceVariant,
-    marginBottom: 4,
-  },
-  dataRow: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.premium.borderSolid,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.03,
+    shadowRadius: 20,
+    elevation: 2,
+  },
+  leftContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  iconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(204, 32, 44, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   bpRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    marginBottom: 4,
   },
-  systolic: {
-    ...typography.headlineLg,
-    fontVariant: ['tabular-nums'],
+  bpVal: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 20,
+    color: colors.premium.textMain,
+    lineHeight: 20,
   },
-  slash: {
-    ...typography.headlineLg,
-    color: colors.outlineVariant,
+  bpSlash: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 16,
+    color: '#9CA3AF',
+    lineHeight: 16,
     marginHorizontal: 4,
   },
-  diastolic: {
-    ...typography.headlineLg,
-    color: colors.onSurface,
-    fontVariant: ['tabular-nums'],
+  timeText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: colors.premium.textMuted,
   },
-  statusDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginLeft: 8,
+  rightContent: {
+    alignItems: 'flex-end',
+    gap: 8,
   },
-  pulseContainer: {
+  statusPill: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  statusText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+  },
+  pulseRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-start',
+    gap: 4,
   },
-  pulseValue: {
-    ...typography.bodyLg,
+  pulseVal: {
     fontFamily: 'Inter_600SemiBold',
-    color: colors.tertiary,
-    fontVariant: ['tabular-nums'],
-    marginLeft: 6,
-  },
-  dragHandle: {
-    width: 24,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
+    fontSize: 13,
+    color: '#4B5563',
   },
   deleteButton: {
-    backgroundColor: colors.danger,
+    backgroundColor: colors.premium.redTo,
     justifyContent: 'center',
     alignItems: 'center',
     width: 80,
     height: '100%',
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
+    borderRadius: 24,
     marginBottom: 16,
+    marginLeft: -20,
   },
   deleteText: {
-    ...typography.labelLg,
-    color: colors.onError,
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: colors.white,
   },
 });

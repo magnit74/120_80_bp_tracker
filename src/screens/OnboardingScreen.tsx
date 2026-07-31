@@ -1,52 +1,71 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image, Platform } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 const SLIDES = [
   {
     id: '1',
-    title: 'Vital Heart Logic',
-    description: 'Track your blood pressure with clinical precision and ease.',
-    image: require('../../assets/onboarding/slide1.png'), // Need to ensure these exist or will be replaced
+    title: 'Take Control of Your Health',
+    description: 'Track blood pressure with clinical precision and get insights to manage your cardiovascular wellness effectively.',
+    image: require('../../assets/images/onboarding_1_heart.png'),
   },
   {
     id: '2',
-    title: 'Fast & Simple',
-    description: 'Log your readings in seconds without any distractions.',
-    image: require('../../assets/onboarding/slide2.png'),
+    title: 'Log Readings in Seconds',
+    description: 'Quick, effortless entry for busy lives so you can focus on what matters most.',
+    image: require('../../assets/images/onboarding_2_phone.png'),
   },
   {
     id: '3',
-    title: 'Insights & Analytics',
-    description: 'Understand your heart health with beautiful charts and PDF reports.',
-    image: require('../../assets/onboarding/slide3.png'),
+    title: 'See Your Progress',
+    description: 'Beautiful charts and PDF reports you can easily share with your doctor.',
+    image: require('../../assets/images/onboarding_3_chart.png'),
   }
 ];
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
 
-const SlideItem = ({ item, index, scrollX }: { item: typeof SLIDES[0], index: number, scrollX: SharedValue<number> }) => {
+const SlideItem = ({ item, index, scrollX, insets }: { item: typeof SLIDES[0], index: number, scrollX: SharedValue<number>, insets: any }) => {
   const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
 
   const imageStyle = useAnimatedStyle(() => {
-    const scale = interpolate(scrollX.value, inputRange, [0.85, 1, 0.85], Extrapolation.CLAMP);
-    const opacity = interpolate(scrollX.value, inputRange, [0.3, 1, 0.3], Extrapolation.CLAMP);
-    return { transform: [{ scale }], opacity };
+    const scale = interpolate(scrollX.value, inputRange, [0.8, 1, 0.8], Extrapolation.CLAMP);
+    const translateY = interpolate(scrollX.value, inputRange, [50, 0, 50], Extrapolation.CLAMP);
+    const opacity = interpolate(scrollX.value, inputRange, [0.4, 1, 0.4], Extrapolation.CLAMP);
+    return { transform: [{ scale }, { translateY }], opacity };
+  });
+
+  const textStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(scrollX.value, inputRange, [20, 0, 20], Extrapolation.CLAMP);
+    const opacity = interpolate(scrollX.value, inputRange, [0, 1, 0], Extrapolation.CLAMP);
+    return { transform: [{ translateY }], opacity };
   });
 
   return (
     <View style={styles.slide}>
-      <Animated.View style={[styles.imageArea, imageStyle]}>
-        <Image source={item.image} style={styles.image} resizeMode="contain" />
+      {/* 3D Image Area */}
+      <View style={styles.imageContainer}>
+        <Animated.Image 
+          source={item.image} 
+          style={[styles.image, imageStyle]} 
+          resizeMode="contain" 
+        />
+      </View>
+
+      {/* Text Area (Sits inside the bottom sheet) */}
+      <Animated.View style={[styles.textContainer, textStyle, { paddingBottom: insets.bottom + 80 }]}>
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.description}>{item.description}</Text>
       </Animated.View>
     </View>
   );
@@ -64,9 +83,13 @@ export default function OnboardingScreen() {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
       await AsyncStorage.setItem('hasViewedOnboarding', 'true');
-      // Navigate to PushPermission based on the redesign plan
       navigation.replace('PushPermission' as any);
     }
+  };
+
+  const handleSkip = async () => {
+    await AsyncStorage.setItem('hasViewedOnboarding', 'true');
+    navigation.replace('PushPermission' as any);
   };
 
   const onMomentumScrollEnd = (e: any) => {
@@ -79,31 +102,15 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.topArea, { paddingTop: insets.top + 24 }]}>
-        <View style={styles.pagination}>
-          {SLIDES.map((_, index) => {
-            const isFilled = index <= currentIndex;
-            return (
-              <Animated.View
-                key={index}
-                style={[styles.dot, isFilled && styles.dotActive]}
-              />
-            );
-          })}
-        </View>
-      </View>
-
-      <View style={[styles.contentArea, { top: insets.top + 72 }]}>
-        <Text style={styles.title}>{SLIDES[currentIndex].title}</Text>
-        <Text style={styles.description}>{SLIDES[currentIndex].description}</Text>
-      </View>
+    <LinearGradient colors={['#ffffff', '#F4F7FA']} style={styles.container}>
+      {/* Bottom Sheet Background */}
+      <View style={styles.bottomSheetBg} />
 
       <FlatList
         ref={flatListRef}
         data={SLIDES}
         renderItem={({ item, index }) => (
-          <SlideItem item={item} index={index} scrollX={scrollX} />
+          <SlideItem item={item} index={index} scrollX={scrollX} insets={insets} />
         )}
         keyExtractor={item => item.id}
         horizontal
@@ -116,97 +123,181 @@ export default function OnboardingScreen() {
         style={styles.flatList}
       />
 
-      <View style={[styles.bottomButton, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <TouchableOpacity style={styles.button} onPress={handleNext} activeOpacity={0.9}>
-          <Text style={styles.buttonText}>
-            {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
-          </Text>
+      <View style={[styles.bottomControls, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <TouchableOpacity 
+          style={styles.buttonWrapper} 
+          onPress={handleNext} 
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={['#74D680', '#43A047']}
+            style={styles.buttonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.buttonText}>
+              {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
+            </Text>
+            {currentIndex === SLIDES.length - 1 && (
+              <MaterialIcons name="arrow-forward" size={22} color="#FFF" style={{ marginLeft: 8 }} />
+            )}
+          </LinearGradient>
         </TouchableOpacity>
+
+        <View style={styles.paginationRow}>
+          {currentIndex < SLIDES.length - 1 ? (
+            <TouchableOpacity onPress={handleSkip} style={styles.skipBtn}>
+              <Text style={styles.skipText}>Skip</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.skipBtnPlaceholder} />
+          )}
+
+          <View style={styles.pagination}>
+            {SLIDES.map((_, index) => {
+              const isActive = index === currentIndex;
+              return (
+                <Animated.View
+                  key={index}
+                  style={[styles.dot, isActive ? styles.dotActive : null]}
+                />
+              );
+            })}
+          </View>
+          
+          <View style={styles.skipBtnPlaceholder} />
+        </View>
       </View>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLowest,
   },
-  topArea: {
+  bottomSheetBg: {
     position: 'absolute',
-    top: 0,
-    left: 24,
-    right: 24,
-    zIndex: 10,
-  },
-  pagination: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    gap: 8,
-  },
-  dot: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: colors.surfaceContainerHigh,
-  },
-  dotActive: {
-    backgroundColor: colors.primary,
-  },
-  contentArea: {
-    position: 'absolute',
-    left: 24,
-    right: 24,
-    zIndex: 10,
-    alignItems: 'center',
-  },
-  title: {
-    ...typography.headlineLg,
-    color: colors.onSurface,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  description: {
-    ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    paddingHorizontal: 16,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: height * 0.42,
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -10 },
+    shadowOpacity: 0.04,
+    shadowRadius: 40,
+    elevation: 20,
   },
   flatList: {
     flex: 1,
+    zIndex: 2,
   },
   slide: {
     width,
     flex: 1,
+    justifyContent: 'space-between',
   },
-  imageArea: {
-    position: 'absolute',
-    bottom: 120,
-    left: 0,
-    right: 0,
-    height: '50%',
+  imageContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingTop: 48,
+    paddingBottom: 32,
   },
   image: {
-    width: '90%',
-    height: '90%',
+    width: 280,
+    height: 280,
+    zIndex: 2,
   },
-  bottomButton: {
+  textContainer: {
+    height: height * 0.42,
+    paddingHorizontal: 32,
+    paddingTop: 40,
+    alignItems: 'center',
+  },
+  title: {
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 28,
+    color: '#111827',
+    textAlign: 'center',
+    marginBottom: 16,
+    letterSpacing: -0.5,
+  },
+  description: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    paddingHorizontal: 8,
+  },
+  bottomControls: {
     position: 'absolute',
     bottom: 0,
-    left: 24,
-    right: 24,
-  },
-  button: {
-    paddingVertical: 18,
-    borderRadius: 16,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
     alignItems: 'center',
-    backgroundColor: colors.primary,
+    zIndex: 10,
+  },
+  buttonWrapper: {
+    width: '100%',
+    maxWidth: 320,
+    shadowColor: '#4AA981',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 25,
+    elevation: 8,
+    borderRadius: 99,
+    marginBottom: 24,
+  },
+  buttonGradient: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 99,
+    flexDirection: 'row',
   },
   buttonText: {
-    ...typography.headlineSm,
-    color: colors.onPrimary,
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 18,
+    color: '#FFFFFF',
+  },
+  paginationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    maxWidth: 320,
+    marginBottom: 24,
+  },
+  skipBtn: {
+    paddingVertical: 8,
+  },
+  skipText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 13,
+    color: '#9CA3AF',
+  },
+  skipBtnPlaceholder: {
+    width: 32,
+  },
+  pagination: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dot: {
+    height: 6,
+    width: 6,
+    borderRadius: 3,
+    backgroundColor: '#E5E7EB',
+  },
+  dotActive: {
+    backgroundColor: '#E15858',
   },
 });

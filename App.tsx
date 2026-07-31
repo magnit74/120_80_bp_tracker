@@ -43,13 +43,13 @@ export default function App() {
   }, [appReady]);
 
   if (!appReady) {
-    return <View style={{ flex: 1, backgroundColor: '#FAF3E0' }} />;
+    return <View style={{ flex: 1, backgroundColor: '#F4F7FA' }} />;
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <View style={{ flex: 1, backgroundColor: '#FAF3E0' }}>
+        <View style={{ flex: 1, backgroundColor: '#F4F7FA' }}>
           <ErrorBoundary>
             <AppNavigator />
           </ErrorBoundary>

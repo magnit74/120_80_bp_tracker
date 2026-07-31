@@ -1,16 +1,31 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient as ExpoLinearGradient } from 'expo-linear-gradient';
+import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
-import { ShieldIcon, HeartPulseIcon } from '../components/Icons';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'OfferDetail'>;
+
+// Simple Check Icon for features
+const CheckIcon = () => (
+  <View style={styles.checkCircle}>
+    <Text style={styles.checkTick}>✓</Text>
+  </View>
+);
+
+const FeatureCard = ({ title, desc }: { title: string, desc: string }) => (
+  <View style={styles.featureCardWrapper}>
+    <View style={styles.featureCard}>
+      <CheckIcon />
+      <Text style={styles.featureTitle}>{title}</Text>
+      <Text style={styles.featureDesc}>{desc}</Text>
+    </View>
+  </View>
+);
 
 export default function OfferDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -28,53 +43,58 @@ export default function OfferDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
-        <View style={styles.imageContainer}>
-          <ExpoLinearGradient
-            colors={[colors.primary, colors.primaryContainer]}
-            style={styles.headerImage}
-          />
-          <TouchableOpacity style={[styles.closeButton, { top: insets.top + 16 }]} onPress={handleClose}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 200, paddingTop: insets.top + 24 }}>
+        
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
             <Text style={styles.closeButtonText}>✕</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.badge}>PREMIUM ACCESS</Text>
-          <Text style={styles.title}>Unlock Full Health Insights</Text>
+          <View style={styles.badgeContainer}>
+            <Text style={styles.badgeText}>LIMITED TIME OFFER</Text>
+          </View>
+          
+          <Text style={styles.title}>Unlock Your Full Heart Potential</Text>
           <Text style={styles.description}>
-            Get personalized blood pressure analysis, unlimited history, and exportable PDF reports for your doctor.
+            Get access to advanced analytics, PDF exports, and deep health insights.
           </Text>
 
-          <View style={styles.featuresList}>
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <HeartPulseIcon size={20} color={colors.primary} />
-              </View>
-              <View style={styles.featureTextContainer}>
-                <Text style={styles.featureTitle}>Advanced Analytics</Text>
-                <Text style={styles.featureDesc}>Understand your trends</Text>
-              </View>
+          <View style={styles.gridContainer}>
+            <View style={styles.row}>
+              <FeatureCard title="Blood Pressure Analysis" desc="Understand your trends." />
+              <FeatureCard title="Export PDF" desc="Share with your doctor." />
             </View>
-            
-            <View style={styles.featureItem}>
-              <View style={styles.featureIcon}>
-                <ShieldIcon size={20} color={colors.primary} />
-              </View>
-              <View style={styles.featureTextContainer}>
-                <Text style={styles.featureTitle}>Secure PDF Export</Text>
-                <Text style={styles.featureDesc}>Share with your doctor</Text>
-              </View>
+            <View style={styles.row}>
+              <FeatureCard title="Secure Storage" desc="All your data is safe." />
+              <FeatureCard title="Priority Support" desc="We are here to help." />
             </View>
           </View>
         </View>
       </ScrollView>
 
+      {/* Sticky Bottom Area */}
       <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <Text style={styles.priceText}>$4.99 / week, cancel anytime</Text>
-        <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} activeOpacity={0.9}>
-          <Text style={styles.primaryButtonText}>Continue</Text>
+        <View style={styles.blurBg} />
+        
+        <TouchableOpacity 
+          style={styles.buttonWrapper} 
+          onPress={handleContinue} 
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={[colors.premium.blueHover, colors.premium.blueMain]}
+            style={styles.buttonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.buttonText}>GET PREMIUM ACCESS</Text>
+          </LinearGradient>
         </TouchableOpacity>
+        
+        <Text style={styles.priceText}>$4.99 / week, cancel anytime</Text>
+        
         <View style={styles.linksRow}>
           <Text style={styles.linkText}>Terms</Text>
           <Text style={styles.linkText}>Privacy</Text>
@@ -88,78 +108,106 @@ export default function OfferDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLowest,
+    backgroundColor: '#111827', 
   },
-  imageContainer: {
-    width: '100%',
-    height: 320,
-    backgroundColor: colors.surfaceContainer,
-    position: 'relative',
-  },
-  headerImage: {
-    width: '100%',
-    height: '100%',
+  header: {
+    alignItems: 'flex-end',
+    paddingHorizontal: 24,
+    marginBottom: 20,
   },
   closeButton: {
-    position: 'absolute',
-    right: 24,
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   closeButtonText: {
-    color: colors.white,
-    fontSize: 18,
-    fontFamily: 'Inter_600SemiBold',
+    color: '#9CA3AF',
+    fontSize: 16,
+    fontFamily: 'Inter_700Bold',
   },
   content: {
-    padding: 24,
+    paddingHorizontal: 24,
+    alignItems: 'center',
   },
-  badge: {
-    ...typography.labelLg,
-    color: colors.primary,
+  badgeContainer: {
+    backgroundColor: 'rgba(52, 211, 153, 0.2)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(52, 211, 153, 0.3)',
+  },
+  badgeText: {
+    color: '#34D399',
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
     letterSpacing: 1,
-    marginBottom: 12,
   },
   title: {
-    ...typography.headlineLg,
-    color: colors.onSurface,
-    marginBottom: 12,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 32,
+    color: '#FFFFFF',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 40,
   },
   description: {
-    ...typography.bodyLg,
-    color: colors.onSurfaceVariant,
-    marginBottom: 32,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 16,
+    color: '#9CA3AF',
+    textAlign: 'center',
+    marginBottom: 40,
+    paddingHorizontal: 16,
+    lineHeight: 24,
   },
-  featuresList: {
-    gap: 24,
+  gridContainer: {
+    width: '100%',
+    gap: 16,
   },
-  featureItem: {
+  row: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
   },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.primaryContainer,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  featureTextContainer: {
+  featureCardWrapper: {
     flex: 1,
   },
+  featureCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  checkCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(52, 211, 153, 0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  checkTick: {
+    color: '#34D399',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   featureTitle: {
-    ...typography.headlineSm,
-    color: colors.onSurface,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 16,
+    color: '#FFFFFF',
+    marginBottom: 6,
   },
   featureDesc: {
-    ...typography.bodyMd,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#9CA3AF',
+    lineHeight: 20,
   },
   bottomContainer: {
     position: 'absolute',
@@ -167,35 +215,52 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 24,
-    paddingTop: 16,
-    backgroundColor: colors.surfaceContainerLowest,
+    paddingTop: 32,
+  },
+  blurBg: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: '#111827',
     borderTopWidth: 1,
-    borderTopColor: colors.outlineVariant,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  buttonWrapper: {
+    width: '100%',
+    maxWidth: 320,
+    alignSelf: 'center',
+    shadowColor: colors.premium.blueMain,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 25,
+    elevation: 8,
+    borderRadius: 16,
+    marginBottom: 16,
+    overflow: Platform.OS === 'android' ? 'hidden' : 'visible',
+  },
+  buttonGradient: {
+    paddingVertical: 18,
+    alignItems: 'center',
+    borderRadius: 16,
+  },
+  buttonText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+    color: '#FFFFFF',
   },
   priceText: {
-    ...typography.labelMd,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+    color: '#9CA3AF',
     textAlign: 'center',
-    marginBottom: 12,
-  },
-  primaryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: 18,
-    borderRadius: 16,
-    alignItems: 'center',
     marginBottom: 16,
-  },
-  primaryButtonText: {
-    ...typography.headlineSm,
-    color: colors.onPrimary,
   },
   linksRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingHorizontal: 32,
+    justifyContent: 'center',
+    gap: 32,
   },
   linkText: {
-    ...typography.labelMd,
-    color: colors.onSurfaceVariant,
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: '#6B7280',
   },
 });

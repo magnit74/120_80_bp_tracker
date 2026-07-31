@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 import * as MailComposer from 'expo-mail-composer';
 
@@ -9,8 +9,8 @@ const FEEDBACK_EMAIL = 'magnitik74@gmail.com';
 export const shouldShowReviewPrompt = async (recordCount: number): Promise<boolean> => {
   try {
     const shown = await AsyncStorage.getItem(REVIEW_SHOWN_KEY);
-    if (shown === 'true') return false;
-    if (recordCount < 5) return false;
+    // if (shown === 'true') return false; // Disabled for testing
+    if (recordCount < 0) return false; // Changed to 0 for immediate testing
     return true;
   } catch {
     return false;
@@ -22,6 +22,10 @@ export const handlePositiveReview = async (): Promise<void> => {
     await AsyncStorage.setItem(REVIEW_SHOWN_KEY, 'true');
     const available = await StoreReview.isAvailableAsync();
     if (available) {
+      if (Platform.OS === 'android') {
+        // Fallback for testing, since Play Store won't show it for sideloaded APKs
+        Alert.alert("Store Review", "Native prompt would appear here (if installed from Play Store).");
+      }
       await StoreReview.requestReview();
     }
   } catch (error) {

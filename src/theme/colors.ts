@@ -1,8 +1,8 @@
 export const colors = {
   // === Vital Heart Logic Theme ===
-  surface: '#fff8f7',
-  surfaceDim: '#f1d3d0',
-  surfaceBright: '#fff8f7',
+  surface: '#ffffff',
+  surfaceDim: '#f4f7fa',
+  surfaceBright: '#ffffff',
   surfaceContainerLowest: '#ffffff',
   surfaceContainerLow: '#fff0ef',
   surfaceContainer: '#ffe9e7',
@@ -44,30 +44,65 @@ export const colors = {
   tertiaryFixedDim: '#bcc7de',
   onTertiaryFixed: '#111c2d',
   onTertiaryFixedVariant: '#3c475a',
-  background: '#fff8f7',
-  onBackground: '#271816',
+  background: '#F4F7FA',
+  onBackground: '#1F2937',
   surfaceVariant: '#f9dcd9',
 
   // === App specific semantics based on Vital Heart Logic ===
   white: '#ffffff',
   black: '#000000',
-  border: '#8f6f6c', // mapping to outline
-  borderLight: '#e4beba', // mapping to outlineVariant
+  border: '#8f6f6c', 
+  borderLight: '#F3F4F6', 
   
-  textPrimary: '#271816', // mapping to onBackground
-  textSecondary: '#5b403d', // mapping to onSurfaceVariant
-  textLight: '#8f6f6c', // mapping to outline
-  textTertiary: '#8f6f6c', // mapping to outline
+  textPrimary: '#1F2937', 
+  textSecondary: '#6B7280', 
+  textLight: '#9CA3AF', 
+  textTertiary: '#9CA3AF', 
 
   // === Blood pressure specific ===
-  systolic: '#d32f2f', // primaryContainer
-  diastolic: '#af101a', // primary
-  pulse: '#657085', // tertiaryContainer
+  systolic: '#CC202C', 
+  diastolic: '#E44B55', 
+  pulse: '#1956B3', 
   
-  success: '#188038', // Green for normal BP
-  successTint: '#e6f4ea',
-  warning: '#F59E0B', // Amber for elevated
+  success: '#43A047', 
+  successTint: '#74D680',
+  warning: '#F59E0B', 
   warningTint: '#FFFBEB',
-  danger: '#ba1a1a', // error
-  dangerTint: '#ffdad6' // errorContainer
+  danger: '#CC202C', 
+  dangerTint: '#ffdad6',
+
+  // === Premium Glassmorphism Theme ===
+  premium: {
+    bg: '#F4F7FA',
+    card: '#FFFFFF',
+    textMain: '#1F2937',
+    textMuted: '#6B7280',
+    redFrom: '#E44B55',
+    redTo: '#CC202C',
+    greenFrom: '#74D680',
+    greenTo: '#43A047',
+    blueMain: '#1956B3',
+    blueHover: '#2b64c0',
+    border: 'rgba(243, 244, 246, 0.5)', 
+    borderSolid: '#F3F4F6'
+  },
+
+  // === Design 2.0 Theme ===
+  design2: {
+    bg: '#F4F7FA',
+    bgLight: '#F8F9FA',
+    textMain: '#111827',
+    textMuted: '#6B7280',
+    red: '#DE5B5B',
+    redLight: '#E17373',
+    redLighter: '#E48A8A',
+    redAction: '#D32F2F',
+    greenMain: '#4AA981',
+    greenLight: '#7FC094',
+    greenLighter: '#D3EFD9',
+    greenGradientStart: '#4AA981',
+    greenGradientEnd: '#76CCA2',
+    cardShadow: 'rgba(0,0,0,0.04)',
+    redShadow: 'rgba(225, 115, 115, 0.2)',
+  }
 };

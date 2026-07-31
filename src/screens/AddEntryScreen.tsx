@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
+import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withTiming, Easing, withSpring } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from '@expo/vector-icons';
 
 import { colors } from '../theme/colors';
-import { typography } from '../theme/typography';
 import { saveRecord } from '../store/storage';
-import { SunIcon, MoonIcon, ShieldIcon, HeartPulseIcon } from '../components/Icons';
 
-const TAGS = ['Morning', 'Afternoon', 'Evening', 'Headache', 'Before Medication', 'After Medication', 'Stress', 'After Exercise', 'Feeling Well'];
+const TAGS = ['Morning', 'Evening', 'Headache', 'Before Meds', 'Stress', 'After Exercise'];
 
 export const AddEntryScreen = () => {
   const navigation = useNavigation();
@@ -24,7 +24,6 @@ export const AddEntryScreen = () => {
 
   const saveCheckScale = useSharedValue(0);
   const saveCheckOpacity = useSharedValue(0);
-
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   useEffect(() => {
@@ -39,9 +38,7 @@ export const AddEntryScreen = () => {
   }, [saveState, navigation]);
 
   const toggleTag = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
+    setSelectedTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
   };
 
   const handleSave = async () => {
@@ -68,10 +65,10 @@ export const AddEntryScreen = () => {
     return (
       <View style={styles.savedContainer}>
         <Animated.View style={[styles.checkCircle, checkMarkStyle]}>
-          <Text style={styles.checkMark}>{String.fromCharCode(10003)}</Text>
+          <MaterialIcons name="check" size={64} color={colors.design2.redAction} />
         </Animated.View>
         <Animated.Text style={[styles.savedText, { opacity: saveCheckOpacity }]}>
-          Reading Logged
+          Measurement Saved
         </Animated.Text>
       </View>
     );
@@ -101,62 +98,73 @@ export const AddEntryScreen = () => {
     }
   };
 
-  const renderStepper = (
-    label: string, 
-    value: number, 
-    field: 'sys'|'dia'|'pul',
-    color: string
-  ) => {
-    return (
-      <View style={styles.stepperColumn}>
-        <Text style={[styles.labelText, { color }]}>{label}</Text>
-        
-        <View style={styles.valueContainer}>
-          <Text style={[styles.valueText, { color }]} adjustsFontSizeToFit numberOfLines={1}>{value}</Text>
-        </View>
+  const renderDial = (label: string, value: number, field: 'sys'|'dia'|'pul', isPulse: boolean) => {
+    const fromColor = isPulse ? '#2B75E6' : '#E44B55';
+    const toColor = isPulse ? '#1956B3' : '#CC202C';
+    const shadowColor = isPulse ? '#1956B3' : '#CC202C';
+    const btnBorder = isPulse ? 'rgba(25,86,179,0.2)' : 'rgba(204,32,44,0.2)';
+    const btnText = isPulse ? '#1956B3' : '#CC202C';
 
-        <View style={styles.horizontalButtons}>
+    return (
+      <View style={styles.dialContainer}>
+        <View style={styles.dialRow}>
           <TouchableOpacity 
-            style={styles.stepperButton}
+            style={[styles.dialButton, { borderColor: btnBorder }]}
             onPressIn={() => handlePressIn(field, -1)}
             onPressOut={handlePressOut}
             activeOpacity={0.6}
           >
-            <Text style={[styles.stepperButtonText, { color }]}>−</Text>
+            <MaterialIcons name="remove" size={28} color={btnText} />
           </TouchableOpacity>
+          
+          <View style={[styles.dialCircleWrapper, { shadowColor }]}>
+            <LinearGradient
+              colors={[fromColor, toColor]}
+              style={styles.dialCircleGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.dialValue}>{value}</Text>
+            </LinearGradient>
+          </View>
 
           <TouchableOpacity 
-            style={styles.stepperButton}
+            style={[styles.dialButton, { borderColor: btnBorder }]}
             onPressIn={() => handlePressIn(field, 1)}
             onPressOut={handlePressOut}
             activeOpacity={0.6}
           >
-            <Text style={[styles.stepperButtonText, { color }]}>+</Text>
+            <MaterialIcons name="add" size={28} color={btnText} />
           </TouchableOpacity>
         </View>
+        <Text style={styles.dialLabel}>{label}</Text>
       </View>
     );
   };
 
   return (
     <Animated.View style={styles.container} entering={FadeIn.duration(250)}>
-      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>✕</Text>
+      <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtnLeft}>
+          <MaterialIcons name="chevron-left" size={26} color={colors.design2.redAction} />
+          <Text style={styles.headerBtnText}>Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>New Reading</Text>
-        <View style={{ width: 44 }} />
+        <Text style={styles.headerTitle}>Add Measurement</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerBtnRight}>
+          <Text style={styles.headerBtnText}>Cancel</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.steppersRow}>
-          {renderStepper('SYS', systolic, 'sys', colors.systolic)}
-          {renderStepper('DIA', diastolic, 'dia', colors.diastolic)}
-          {renderStepper('PULSE', pulse, 'pul', colors.pulse)}
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={[styles.content, { paddingBottom: Math.max(insets.bottom, 24) + 120 }]}>
+        <View style={styles.card}>
+          {renderDial('Systolic (mmHg)', systolic, 'sys', false)}
+          {renderDial('Diastolic (mmHg)', diastolic, 'dia', false)}
+          {renderDial('Pulse (bpm)', pulse, 'pul', true)}
         </View>
 
-        <View style={styles.tagsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tagsScroll}>
+        <View style={styles.tagsCard}>
+          <Text style={styles.tagsTitle}>Quick Tags</Text>
+          <View style={styles.tagsGrid}>
             {TAGS.map(tag => {
               const isActive = selectedTags.includes(tag);
               return (
@@ -166,40 +174,29 @@ export const AddEntryScreen = () => {
                   onPress={() => toggleTag(tag)}
                   activeOpacity={0.7}
                 >
-                  {tag === 'Morning' && <SunIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
-                  {tag === 'Evening' && <MoonIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
-                  {tag === 'After Medication' && <ShieldIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
-                  {tag === 'After Exercise' && <HeartPulseIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
-                  <Text style={[styles.tagText, isActive && styles.tagTextActive, (tag === 'Morning' || tag === 'Evening' || tag === 'After Medication' || tag === 'After Exercise') && { marginLeft: 6 }]}>
-                    {tag}
-                  </Text>
+                  <Text style={[styles.tagText, isActive && styles.tagTextActive]}>{tag}</Text>
                 </TouchableOpacity>
               );
             })}
-          </ScrollView>
-        </View>
-
-        <View style={styles.dateTimeContainer}>
-          <Text style={styles.dateTimeLabel}>Measurement{'\n'}Time</Text>
-          <View style={styles.dateTimePills}>
-            <View style={styles.datePill}>
-              <Text style={styles.datePillText}>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
-            </View>
-            <View style={styles.timePill}>
-              <Text style={styles.timePillText}>{new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false })}</Text>
-            </View>
           </View>
         </View>
+      </ScrollView>
 
-        <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={handleSave}
-            activeOpacity={0.8}
+      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 32) }]}>
+        <TouchableOpacity 
+          style={styles.saveButtonWrapper}
+          onPress={handleSave}
+          activeOpacity={0.9}
+        >
+          <LinearGradient
+            colors={['#E44B55', '#CC202C']}
+            style={styles.saveButtonGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
           >
-            <Text style={styles.saveButtonText}>Save Reading</Text>
-          </TouchableOpacity>
-        </View>
+            <Text style={styles.saveButtonText}>Save Measurement</Text>
+          </LinearGradient>
+        </TouchableOpacity>
       </View>
     </Animated.View>
   );
@@ -208,162 +205,195 @@ export const AddEntryScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLowest,
+    backgroundColor: colors.design2.bgLight,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    backgroundColor: colors.surfaceContainerLowest,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
-  closeButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
+  headerBtnLeft: {
+    flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceContainer,
-    borderRadius: 22,
+    padding: 8,
+    width: 80,
   },
-  closeButtonText: {
-    color: colors.onSurface,
-    fontSize: 20,
-    fontFamily: 'Inter_400Regular',
+  headerBtnRight: {
+    padding: 8,
+    width: 80,
+    alignItems: 'flex-end',
   },
-  title: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
+  headerBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: colors.design2.redAction,
+  },
+  headerTitle: {
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 16,
+    color: colors.design2.textMain,
   },
   content: {
-    flex: 1,
-    backgroundColor: colors.surfaceBright,
-    borderTopLeftRadius: 32,
-    borderTopRightRadius: 32,
-    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingTop: 8,
   },
-  steppersRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 32,
+    paddingTop: 32,
+    paddingBottom: 16,
+    paddingHorizontal: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.04,
+    shadowRadius: 40,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F3F4F6',
+    marginBottom: 24,
+  },
+  dialContainer: {
     alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 40,
+    marginBottom: 32,
   },
-  stepperColumn: {
-    alignItems: 'center',
-  },
-  horizontalButtons: {
+  dialRow: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    gap: 24,
   },
-  stepperButton: {
+  dialButton: {
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: colors.surfaceContainerHigh,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  dialCircleWrapper: {
+    width: 112,
+    height: 112,
+    borderRadius: 56,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  dialCircleGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 56,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  stepperButtonText: {
-    fontSize: 24,
-    fontFamily: 'Inter_500Medium',
-  },
-  valueContainer: {
-    paddingVertical: 16,
-    justifyContent: 'center',
-  },
-  valueText: {
-    ...typography.displayLg,
+  dialValue: {
+    fontFamily: 'Inter_900Black',
+    fontSize: 54,
+    color: '#FFFFFF',
+    marginTop: 4,
     letterSpacing: -1.5,
   },
-  labelText: {
-    ...typography.labelLg,
-    marginBottom: 4,
+  dialLabel: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 13,
+    color: colors.design2.textMuted,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 12,
   },
-  tagsContainer: {
-    marginBottom: 32,
-  },
-  tagsScroll: {
-    paddingRight: 20,
-    paddingLeft: 20,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  tagsCard: {
+    backgroundColor: '#FFFFFF',
     borderRadius: 24,
-    backgroundColor: colors.surfaceContainer,
-    marginRight: 12,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.03,
+    shadowRadius: 30,
+    elevation: 2,
     borderWidth: 1,
-    borderColor: colors.outlineVariant,
-  },
-  tagActive: {
-    backgroundColor: colors.primaryContainer,
-    borderColor: colors.primary,
-  },
-  tagText: {
-    ...typography.labelMd,
-    color: colors.onSurfaceVariant,
-  },
-  tagTextActive: {
-    color: colors.onPrimaryContainer,
-  },
-  dateTimeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
+    borderColor: '#F3F4F6',
     marginBottom: 32,
   },
-  dateTimeLabel: {
-    ...typography.bodyMd,
-    color: colors.onSurface,
+  tagsTitle: {
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 14,
+    color: colors.design2.textMain,
+    marginBottom: 12,
   },
-  dateTimePills: {
+  tagsGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 8,
   },
-  datePill: {
-    backgroundColor: colors.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
+  tag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  timePill: {
-    backgroundColor: colors.surfaceContainer,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 16,
+  tagActive: {
+    backgroundColor: '#FDF2F2',
+    borderColor: '#FDF2F2',
   },
-  datePillText: {
-    ...typography.labelLg,
-    color: colors.onSurface,
+  tagText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    color: colors.design2.textMuted,
   },
-  timePillText: {
-    ...typography.labelLg,
-    color: colors.onSurface,
+  tagTextActive: {
+    color: colors.design2.redAction,
   },
   bottomContainer: {
-    flex: 1,
-    justifyContent: 'flex-end',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(255,255,255,0.9)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(243,244,246,0.5)',
+    paddingTop: 16,
     paddingHorizontal: 20,
+    alignItems: 'center',
   },
-  saveButton: {
+  saveButtonWrapper: {
     width: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 16,
+    maxWidth: 320,
+    shadowColor: colors.design2.redAction,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.35,
+    shadowRadius: 25,
+    elevation: 8,
+    borderRadius: 24,
+  },
+  saveButtonGradient: {
     paddingVertical: 18,
     alignItems: 'center',
-    justifyContent: 'center',
+    borderRadius: 24,
   },
   saveButtonText: {
-    ...typography.headlineSm,
-    color: colors.onPrimary,
+    fontFamily: 'Inter_800ExtraBold',
+    fontSize: 18,
+    color: '#FFFFFF',
   },
   savedContainer: {
     flex: 1,
-    backgroundColor: colors.surfaceContainerLowest,
+    backgroundColor: colors.design2.bgLight,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -371,17 +401,14 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.primaryContainer,
+    backgroundColor: 'rgba(211,47,47,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
   },
-  checkMark: {
-    ...typography.displayLg,
-    color: colors.onPrimaryContainer,
-  },
   savedText: {
-    ...typography.headlineMd,
-    color: colors.onSurface,
+    fontFamily: 'Inter_700Bold',
+    fontSize: 24,
+    color: colors.design2.textMain,
   },
 });
