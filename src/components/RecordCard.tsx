@@ -4,8 +4,9 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-na
 import { Swipeable } from 'react-native-gesture-handler';
 import * as Haptics from 'expo-haptics';
 import { colors } from '../theme/colors';
-import { shadows } from '../theme/shadows';
+import { typography } from '../theme/typography';
 import { HeartPulseIcon, GripIcon } from './Icons';
+import { shadows } from '../theme/shadows';
 
 export interface RecordCardProps extends Omit<PressableProps, 'style'> {
   systolic: number;
@@ -39,7 +40,7 @@ export const RecordCard: React.FC<RecordCardProps> = ({
   const getStatusColor = () => {
     if (systolic >= 140 || diastolic >= 90) return colors.danger;
     if (systolic >= 130 || diastolic > 80) return colors.warning;
-    if (systolic > 120) return '#F59E0B';
+    if (systolic > 120) return colors.warning; // Elevated
     return colors.success;
   };
 
@@ -73,10 +74,8 @@ export const RecordCard: React.FC<RecordCardProps> = ({
           onPress={onPress}
           {...props}
         >
-          {/* Status color vertical bar */}
           <View style={[styles.statusLine, { backgroundColor: getStatusColor() }]} />
           
-          {/* Main content block */}
           <View style={styles.contentContainer}>
             <Text style={styles.timeText}>{time}</Text>
             
@@ -88,15 +87,13 @@ export const RecordCard: React.FC<RecordCardProps> = ({
                 <View style={[styles.statusDot, { backgroundColor: getStatusColor() }]} />
               </View>
 
-              {/* Pulse block */}
               <View style={styles.pulseContainer}>
-                <HeartPulseIcon size={14} color={colors.pulse} />
+                <HeartPulseIcon size={16} color={colors.pulse} />
                 <Text style={styles.pulseValue}>{pulse}</Text>
               </View>
               
-              {/* Swipe hint */}
               <View style={styles.dragHandle}>
-                <GripIcon size={20} color="#D1D5DB" />
+                <GripIcon size={20} color={colors.outlineVariant} />
               </View>
             </View>
           </View>
@@ -108,17 +105,17 @@ export const RecordCard: React.FC<RecordCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white,
-    borderRadius: 20,
+    backgroundColor: colors.surfaceContainerLowest,
+    borderRadius: 16,
     paddingVertical: 16,
     paddingLeft: 20,
     paddingRight: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
     marginHorizontal: 0,
     position: 'relative',
-    ...shadows.sm,
+    ...shadows.sm, // Soft shadow from Stitch
   },
   statusLine: {
     position: 'absolute',
@@ -126,19 +123,17 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 6,
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
+    borderTopLeftRadius: 16,
+    borderBottomLeftRadius: 16,
   },
   contentContainer: {
     flex: 1,
     justifyContent: 'center',
   },
   timeText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 13,
-    color: '#9CA3AF', // light gray
+    ...typography.labelMd,
+    color: colors.onSurfaceVariant,
     marginBottom: 4,
-    letterSpacing: 0.2,
   },
   dataRow: {
     flexDirection: 'row',
@@ -150,28 +145,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   systolic: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 30,
-    letterSpacing: -1,
+    ...typography.headlineLg,
     fontVariant: ['tabular-nums'],
   },
   slash: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 30,
-    color: '#D1D5DB', // light gray slash
+    ...typography.headlineLg,
+    color: colors.outlineVariant,
     marginHorizontal: 4,
   },
   diastolic: {
-    fontFamily: 'Manrope_700Bold',
-    fontSize: 30,
-    color: '#111827', // almost black
+    ...typography.headlineLg,
+    color: colors.onSurface,
     fontVariant: ['tabular-nums'],
   },
   statusDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    marginLeft: 6,
+    marginLeft: 8,
   },
   pulseContainer: {
     flexDirection: 'row',
@@ -179,11 +170,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   pulseValue: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 15,
-    color: colors.pulse,
+    ...typography.bodyLg,
+    fontFamily: 'Inter_600SemiBold',
+    color: colors.tertiary,
     fontVariant: ['tabular-nums'],
-    marginLeft: 4,
+    marginLeft: 6,
   },
   dragHandle: {
     width: 24,
@@ -196,13 +187,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: 80,
     height: '100%',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    marginBottom: 12,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+    marginBottom: 16,
   },
   deleteText: {
-    color: colors.white,
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
+    ...typography.labelLg,
+    color: colors.onError,
   },
 });

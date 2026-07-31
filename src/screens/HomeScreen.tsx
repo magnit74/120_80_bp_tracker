@@ -1,46 +1,24 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, RefreshControl, Pressable, Alert } from 'react-native';
-import { useNavigation, useFocusEffect, useIsFocused } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
-import { shadows } from '../theme/shadows';
+import { typography } from '../theme/typography';
 import { RecordCard } from '../components/RecordCard';
-import { HealthBenefitCard } from '../components/HealthBenefitCard';
 import { CallOfferCard } from '../components/CallOfferCard';
-import { RatingPrompt } from '../components/RatingPrompt';
-import { DailyHealthTip } from '../components/DailyHealthTip';
-import { HeartPulseIcon, ClockIcon, ShieldIcon, ChartIcon } from '../components/Icons';
+import { HeartPulseIcon } from '../components/Icons';
 import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
-import { shouldShowReviewPrompt } from '../services/reviewService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
-const getBPStatus = (sys: number, dia: number) => {
-  // Modified guidelines to allow 120/80 as Normal
-  if (sys >= 140 || dia >= 90) return { label: 'High Stage 2', color: colors.danger };
-  if (sys >= 130 || dia > 80) return { label: 'High Stage 1', color: colors.warning };
-  if (sys > 120) return { label: 'Elevated', color: '#F59E0B' };
-  return { label: 'Normal', color: colors.success };
-};
-
-const getHeroGradient = (sys: number, dia: number) => {
-  if (sys >= 140 || dia >= 90) return ['#F3E8FF', '#E0CFFC'];
-  if (sys >= 130 || dia > 80) return ['#FFF0E6', '#FFD6C0'];
-  if (sys > 120) return ['#FFF8E1', '#FFECB3'];
-  return ['#E8FFF5', '#D1FAE5'];
-};
-
 export const HomeScreen = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
-  const isFocused = useIsFocused();
   const insets = useSafeAreaInsets();
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const [showRatingPrompt, setShowRatingPrompt] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -48,16 +26,10 @@ export const HomeScreen = () => {
     }, [])
   );
 
-
-
   const loadRecords = async () => {
     try {
       const data = await getRecords();
       setRecords(data);
-
-      if (await shouldShowReviewPrompt(data.length)) {
-        setShowRatingPrompt(true);
-      }
     } catch (error) {
       console.error('Load records error:', error);
     }
@@ -68,53 +40,28 @@ export const HomeScreen = () => {
     try {
       await loadRecords();
     } catch (error) {
-      console.error('Refresh error:', error);
     } finally {
       setRefreshing(false);
     }
   };
 
   const handleDeleteRecord = (id: string) => {
-    Alert.alert(
-      "Delete Record",
-      "Are you sure you want to delete this reading?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { 
-          text: "Delete", 
-          style: "destructive",
-          onPress: async () => {
-            await deleteRecord(id);
-            await loadRecords();
-          }
-        }
-      ]
-    );
+    Alert.alert("Delete Record", "Are you sure you want to delete this reading?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Delete", style: "destructive", onPress: async () => { await deleteRecord(id); await loadRecords(); } }
+    ]);
   };
 
-  const today = new Date();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const formattedDate = `${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
-
-  const todayRecords = records.filter(r => {
-    const recordDate = new Date(r.timestamp);
-    return recordDate.toDateString() === today.toDateString();
-  });
-  const todayLatest = todayRecords.length > 0 ? todayRecords[0] : null;
-
-  const formatTime = (timestamp: number) => {
-    const d = new Date(timestamp);
-    let hours = d.getHours();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12 || 12;
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes} ${ampm}`;
-  };
+  const todayLatest = records.length > 0 ? records[0] : null;
 
   const formatFullDate = (timestamp: number) => {
     const d = new Date(timestamp);
     const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return `${shortMonths[d.getMonth()]} ${d.getDate()}, ${formatTime(timestamp)}`;
+    let hours = d.getHours();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${shortMonths[d.getMonth()]} ${d.getDate()}, ${hours}:${minutes} ${ampm}`;
   };
 
   return (
@@ -122,145 +69,59 @@ export const HomeScreen = () => {
       <ScrollView 
         style={styles.scroll} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 32 }]}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />
-        }
+        contentContainerStyle={[styles.scrollContent, { paddingTop: insets.top + 24 }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
       >
         <View style={styles.header}>
-          <Animated.Text entering={FadeIn.delay(100).duration(400)} style={styles.dateText}>
-            {formattedDate}
-          </Animated.Text>
+          <Text style={styles.greeting}>Welcome Back</Text>
+          <Text style={styles.dateText}>Your health dashboard</Text>
         </View>
 
         {todayLatest ? (
-          <Animated.View 
-            entering={FadeInDown.delay(150).duration(500)}
-            style={styles.heroSection}
-          >
-            <RecordCard 
-              systolic={todayLatest.systolic} 
-              diastolic={todayLatest.diastolic} 
-              pulse={todayLatest.pulse} 
-              time={`Today, ${formatTime(todayLatest.timestamp)}`}
-              onDelete={() => handleDeleteRecord(todayLatest.id)}
-            />
+          <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.heroSection}>
+            <View style={styles.heroCard}>
+              <Text style={styles.heroCardLabel}>LATEST READING</Text>
+              <View style={styles.heroDataRow}>
+                <Text style={styles.heroBpText}>{todayLatest.systolic}/{todayLatest.diastolic}</Text>
+              </View>
+              <View style={styles.heroSubRow}>
+                <HeartPulseIcon size={16} color={colors.onPrimary} />
+                <Text style={styles.heroPulseText}>{todayLatest.pulse} BPM</Text>
+                <Text style={styles.heroTimeText}>• {formatFullDate(todayLatest.timestamp)}</Text>
+              </View>
+            </View>
           </Animated.View>
         ) : (
-          <Animated.View
-            entering={FadeInDown.delay(150).duration(500)}
-            style={styles.heroEmptySection}
-          >
-            <View style={styles.emptyIconCircle}>
-              <HeartPulseIcon size={32} color={colors.primary} />
+          <Animated.View entering={FadeInDown.delay(100).duration(400)} style={styles.heroSection}>
+            <View style={styles.heroCard}>
+              <Text style={styles.heroCardLabel}>LATEST READING</Text>
+              <Text style={styles.heroBpText}>--/--</Text>
+              <Text style={styles.heroPulseText}>No data yet</Text>
             </View>
-            <Text style={styles.heroEmptyTitle}>Welcome to 120/80</Text>
-            <Text style={styles.heroEmptyText}>
-              Your blood pressure companion.
-            </Text>
-
-            <View style={styles.tipsRow}>
-              <View style={styles.tipCard}>
-                <View style={[styles.tipIconCircle, { backgroundColor: '#E8F5F3' }]}>
-                  <ClockIcon size={18} color={colors.primary} />
-                </View>
-                <Text style={styles.tipTitle}>Track Daily</Text>
-                <Text style={styles.tipText}>Log your{'\n'}readings</Text>
-              </View>
-              <View style={styles.tipCard}>
-                <View style={[styles.tipIconCircle, { backgroundColor: '#FFF3E0' }]}>
-                  <ShieldIcon size={18} color={colors.warning} />
-                </View>
-                <Text style={styles.tipTitle}>Stay Healthy</Text>
-                <Text style={styles.tipText}>Get insights{'\n'}and tips</Text>
-              </View>
-              <View style={styles.tipCard}>
-                <View style={[styles.tipIconCircle, { backgroundColor: '#F3E8FF' }]}>
-                  <ChartIcon size={18} color="#8B5CF6" />
-                </View>
-                <Text style={styles.tipTitle}>See Progress</Text>
-                <Text style={styles.tipText}>Track your{'\n'}improvement</Text>
-              </View>
-            </View>
-
-            <Pressable
-              style={({ pressed }) => [styles.startButtonContainer, pressed && { opacity: 0.85 }]}
-              onPress={() => (navigation as any).navigate('AddEntry')}
-            >
-              <LinearGradient
-                colors={[colors.gradientStart, colors.gradientEnd]}
-                style={styles.startButton}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-              >
-                <Text style={styles.startButtonText}>Start Tracking</Text>
-              </LinearGradient>
-            </Pressable>
           </Animated.View>
         )}
 
-        <Animated.View entering={FadeInDown.delay(250).duration(400)} style={{ marginTop: 16 }}>
-          <HealthBenefitCard />
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(300).duration(400)} style={{ marginTop: 16 }}>
+        <Animated.View entering={FadeInDown.delay(200).duration(400)}>
           <CallOfferCard />
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(320).duration(400)} style={{ marginTop: 16 }}>
-          <DailyHealthTip />
-        </Animated.View>
-
-
-        {showRatingPrompt && (
-          <Animated.View entering={FadeInDown.delay(350).duration(400)} style={{ marginTop: 16 }}>
-            <RatingPrompt
-              recordCount={records.length}
-              onDismiss={() => setShowRatingPrompt(false)}
-            />
-          </Animated.View>
-        )}
-
-        {records.length > 1 && (
-          <View style={[styles.recentSection, { marginTop: 24 }]}>
-            <Animated.Text 
-              entering={FadeInDown.delay(400).duration(400)}
-              style={styles.recentLabel}
-            >
-              Recent History
-            </Animated.Text>
-            
-            {records.slice(1, 6).map((record, index) => {
-              const d = new Date(record.timestamp);
-              let hours = d.getHours();
-              const ampm = hours >= 12 ? 'PM' : 'AM';
-              hours = hours % 12 || 12;
-              const minutes = d.getMinutes().toString().padStart(2, '0');
-              const timeStr = `${hours}:${minutes} ${ampm}`;
-              
-              const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-              const dateStr = `${shortMonths[d.getMonth()]} ${d.getDate()}`;
-              
-              return (
-                <Animated.View 
-                  key={record.id}
-                  entering={FadeInDown.delay(450 + index * 60).duration(400)}
-                >
-                  <RecordCard 
-                    systolic={record.systolic} 
-                    diastolic={record.diastolic} 
-                    pulse={record.pulse} 
-                    time={`${dateStr}, ${timeStr}`} 
-                    onDelete={() => handleDeleteRecord(record.id)}
-                  />
-                </Animated.View>
-              );
-            })}
+        {records.length > 0 && (
+          <View style={styles.recentSection}>
+            <Text style={styles.recentLabel}>Recent History</Text>
+            {records.slice(0, 5).map((record, index) => (
+              <Animated.View key={record.id} entering={FadeInDown.delay(300 + index * 50).duration(400)}>
+                <RecordCard 
+                  systolic={record.systolic} 
+                  diastolic={record.diastolic} 
+                  pulse={record.pulse} 
+                  time={formatFullDate(record.timestamp)} 
+                  onDelete={() => handleDeleteRecord(record.id)}
+                />
+              </Animated.View>
+            ))}
           </View>
         )}
       </ScrollView>
-
-
     </View>
   );
 };
@@ -275,163 +136,64 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 200,
+    paddingBottom: 120,
   },
   header: {
-    marginBottom: 20,
+    marginBottom: 24,
+  },
+  greeting: {
+    ...typography.headlineLg,
+    color: colors.onBackground,
+    marginBottom: 4,
   },
   dateText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 16,
-    color: colors.textLight,
+    ...typography.bodyLg,
+    color: colors.onSurfaceVariant,
   },
   heroSection: {
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    marginBottom: 8,
+    marginBottom: 24,
   },
-  lastReadingTime: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textLight,
+  heroCard: {
+    backgroundColor: colors.primary,
+    borderRadius: 24,
+    padding: 24,
   },
-  metricsRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-  },
-  hrNumber: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 24,
-    color: colors.textDark,
-    marginLeft: 4,
-  },
-  hrLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: colors.textLight,
-  },
-  heroEmptySection: {
-    marginBottom: 16,
-    paddingVertical: 8,
-    alignItems: 'center',
-  },
-  emptyIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#E8F5F3',
-    justifyContent: 'center',
-    alignItems: 'center',
+  heroCardLabel: {
+    ...typography.labelLg,
+    color: colors.onPrimaryContainer,
     marginBottom: 12,
   },
-  heroEmptyTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 22,
-    color: colors.textDark,
-    marginBottom: 4,
-    textAlign: 'center',
-  },
-  heroEmptyText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    color: colors.textMedium,
-    lineHeight: 22,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-  tipsRow: {
+  heroDataRow: {
     flexDirection: 'row',
-    gap: 10,
-    width: '100%',
-    marginBottom: 16,
+    alignItems: 'baseline',
   },
-  tipCard: {
-    flex: 1,
-    backgroundColor: colors.white,
-    borderRadius: 14,
-    padding: 16,
+  heroBpText: {
+    ...typography.displayLg,
+    color: colors.onPrimary,
+    fontVariant: ['tabular-nums'],
+  },
+  heroSubRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    ...shadows.sm,
+    marginTop: 12,
   },
-  tipIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  tipTitle: {
+  heroPulseText: {
+    ...typography.bodyLg,
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: colors.textDark,
-    marginBottom: 4,
-    textAlign: 'center',
+    color: colors.onPrimary,
+    marginLeft: 6,
   },
-  tipText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 10,
-    color: colors.textLight,
-    textAlign: 'center',
-    lineHeight: 14,
-  },
-  startButtonContainer: {
-    width: '100%',
-    ...shadows.glow(colors.primary),
-  },
-  startButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 14,
-    width: '100%',
-    alignItems: 'center',
-  },
-  startButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
-    color: colors.white,
+  heroTimeText: {
+    ...typography.bodyMd,
+    color: colors.onPrimaryContainer,
+    marginLeft: 8,
   },
   recentSection: {
-    marginTop: 16,
+    marginTop: 24,
   },
   recentLabel: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 12,
-    color: colors.textLight,
-    letterSpacing: 1,
-    textTransform: 'uppercase' as const,
-    marginBottom: 12,
-  },
-  widgetBanner: {
-    flexDirection: 'row',
-    backgroundColor: colors.surfaceTeal,
-    borderRadius: 16,
-    padding: 20,
-    alignItems: 'center',
-    ...shadows.md,
-  },
-  widgetIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#E8F5F3',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-  },
-  widgetTextContainer: {
-    flex: 1,
-  },
-  widgetBannerTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 18,
-    color: colors.textDark,
-    marginBottom: 4,
-  },
-  widgetBannerDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 15,
-    color: colors.textMedium,
-    lineHeight: 22,
+    ...typography.headlineSm,
+    color: colors.onBackground,
+    marginBottom: 16,
   },
 });

@@ -1,12 +1,12 @@
 import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, Dimensions, FlatList, TouchableOpacity, Image } from 'react-native';
-import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue, withTiming } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { useSharedValue, useAnimatedStyle, interpolate, Extrapolation, SharedValue } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
+import { typography } from '../theme/typography';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
@@ -14,20 +14,20 @@ const { width } = Dimensions.get('window');
 const SLIDES = [
   {
     id: '1',
-    title: 'Take Control of Your Health',
-    description: 'Track blood pressure with clinical precision.',
-    image: require('../../assets/onboarding/slide1.png'),
+    title: 'Vital Heart Logic',
+    description: 'Track your blood pressure with clinical precision and ease.',
+    image: require('../../assets/onboarding/slide1.png'), // Need to ensure these exist or will be replaced
   },
   {
     id: '2',
-    title: 'Log Readings in Seconds',
-    description: 'Quick, effortless entry for busy lives.',
+    title: 'Fast & Simple',
+    description: 'Log your readings in seconds without any distractions.',
     image: require('../../assets/onboarding/slide2.png'),
   },
   {
     id: '3',
-    title: 'See Your Progress Over Time',
-    description: 'Beautiful charts and PDF reports.',
+    title: 'Insights & Analytics',
+    description: 'Understand your heart health with beautiful charts and PDF reports.',
     image: require('../../assets/onboarding/slide3.png'),
   }
 ];
@@ -43,18 +43,10 @@ const SlideItem = ({ item, index, scrollX }: { item: typeof SLIDES[0], index: nu
     return { transform: [{ scale }], opacity };
   });
 
-  const blurOverlayStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(scrollX.value, inputRange, [1, 0, 1], Extrapolation.CLAMP);
-    return { opacity };
-  });
-
   return (
     <View style={styles.slide}>
       <Animated.View style={[styles.imageArea, imageStyle]}>
         <Image source={item.image} style={styles.image} resizeMode="contain" />
-        <Animated.View style={[styles.blurOverlay, blurOverlayStyle]} pointerEvents="none">
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(255,255,255,0.1)' }]} />
-        </Animated.View>
       </Animated.View>
     </View>
   );
@@ -72,7 +64,8 @@ export default function OnboardingScreen() {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
     } else {
       await AsyncStorage.setItem('hasViewedOnboarding', 'true');
-      navigation.replace('PushPermission');
+      // Navigate to PushPermission based on the redesign plan
+      navigation.replace('PushPermission' as any);
     }
   };
 
@@ -87,8 +80,7 @@ export default function OnboardingScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Progress dots at top */}
-      <View style={[styles.topArea, { paddingTop: insets.top + 16 }]}>
+      <View style={[styles.topArea, { paddingTop: insets.top + 24 }]}>
         <View style={styles.pagination}>
           {SLIDES.map((_, index) => {
             const isFilled = index <= currentIndex;
@@ -102,13 +94,11 @@ export default function OnboardingScreen() {
         </View>
       </View>
 
-      {/* Text content under dots */}
-      <View style={[styles.contentArea, { top: insets.top + 52 }]}>
+      <View style={[styles.contentArea, { top: insets.top + 72 }]}>
         <Text style={styles.title}>{SLIDES[currentIndex].title}</Text>
         <Text style={styles.description}>{SLIDES[currentIndex].description}</Text>
       </View>
 
-      {/* Image slides */}
       <FlatList
         ref={flatListRef}
         data={SLIDES}
@@ -126,17 +116,11 @@ export default function OnboardingScreen() {
         style={styles.flatList}
       />
 
-      {/* Button at bottom */}
-      <View style={[styles.bottomButton, { paddingBottom: insets.bottom + 16 }]}>
-        <TouchableOpacity onPress={handleNext} activeOpacity={0.9}>
-          <LinearGradient
-            colors={[colors.gradientStart, colors.gradientEnd]}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>
-              {currentIndex === SLIDES.length - 1 ? 'Get Started  →' : 'Continue'}
-            </Text>
-          </LinearGradient>
+      <View style={[styles.bottomButton, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <TouchableOpacity style={styles.button} onPress={handleNext} activeOpacity={0.9}>
+          <Text style={styles.buttonText}>
+            {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Continue'}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -146,52 +130,48 @@ export default function OnboardingScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.surfaceContainerLowest,
   },
   topArea: {
     position: 'absolute',
     top: 0,
-    left: 32,
-    right: 32,
+    left: 24,
+    right: 24,
     zIndex: 10,
   },
   pagination: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
+    gap: 8,
   },
   dot: {
     flex: 1,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: colors.borderLight,
-    marginHorizontal: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: colors.surfaceContainerHigh,
   },
   dotActive: {
     backgroundColor: colors.primary,
   },
   contentArea: {
     position: 'absolute',
-    left: 32,
-    right: 32,
+    left: 24,
+    right: 24,
     zIndex: 10,
     alignItems: 'center',
   },
   title: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 34,
-    color: colors.textDark,
+    ...typography.headlineLg,
+    color: colors.onSurface,
     textAlign: 'center',
-    marginBottom: 10,
-    letterSpacing: -1,
-    lineHeight: 40,
+    marginBottom: 12,
   },
   description: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 17,
-    color: colors.textMedium,
+    ...typography.bodyLg,
+    color: colors.onSurfaceVariant,
     textAlign: 'center',
-    lineHeight: 24,
+    paddingHorizontal: 16,
   },
   flatList: {
     flex: 1,
@@ -202,39 +182,31 @@ const styles = StyleSheet.create({
   },
   imageArea: {
     position: 'absolute',
-    bottom: 80,
+    bottom: 120,
     left: 0,
     right: 0,
-    height: '45%',
+    height: '50%',
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
-    width: '85%',
-    height: '85%',
-  },
-  blurOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    width: '90%',
+    height: '90%',
   },
   bottomButton: {
     position: 'absolute',
     bottom: 0,
-    left: 32,
-    right: 32,
+    left: 24,
+    right: 24,
   },
   button: {
     paddingVertical: 18,
     borderRadius: 16,
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 6,
+    backgroundColor: colors.primary,
   },
   buttonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
+    ...typography.headlineSm,
+    color: colors.onPrimary,
   },
 });

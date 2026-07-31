@@ -3,14 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'rea
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { FadeIn, useSharedValue, useAnimatedStyle, withTiming, Easing } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { saveRecord } from '../store/storage';
 import { SunIcon, MoonIcon, ShieldIcon, HeartPulseIcon } from '../components/Icons';
-import { shadows } from '../theme/shadows';
 
 const TAGS = ['Morning', 'Afternoon', 'Evening', 'Headache', 'Before Medication', 'After Medication', 'Stress', 'After Exercise', 'Feeling Well'];
 
@@ -142,19 +140,19 @@ export const AddEntryScreen = () => {
 
   return (
     <Animated.View style={styles.container} entering={FadeIn.duration(250)}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.closeButton}>
-          <Text style={styles.closeButtonText}>×</Text>
+          <Text style={styles.closeButtonText}>✕</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Log a Reading</Text>
-        <View style={{ width: 36 }} />
+        <Text style={styles.title}>New Reading</Text>
+        <View style={{ width: 44 }} />
       </View>
 
       <View style={styles.content}>
         <View style={styles.steppersRow}>
-          {renderStepper('SYS', systolic, 'sys', colors.primary)}
-          {renderStepper('DIA', diastolic, 'dia', '#6366F1')}
-          {renderStepper('PULSE', pulse, 'pul', '#E85D75')}
+          {renderStepper('SYS', systolic, 'sys', colors.systolic)}
+          {renderStepper('DIA', diastolic, 'dia', colors.diastolic)}
+          {renderStepper('PULSE', pulse, 'pul', colors.pulse)}
         </View>
 
         <View style={styles.tagsContainer}>
@@ -168,10 +166,10 @@ export const AddEntryScreen = () => {
                   onPress={() => toggleTag(tag)}
                   activeOpacity={0.7}
                 >
-                  {tag === 'Morning' && <SunIcon size={12} color={isActive ? colors.primary : colors.textMedium} />}
-                  {tag === 'Evening' && <MoonIcon size={12} color={isActive ? colors.primary : colors.textMedium} />}
-                  {tag === 'After Medication' && <ShieldIcon size={12} color={isActive ? colors.primary : colors.textMedium} />}
-                  {tag === 'After Exercise' && <HeartPulseIcon size={12} color={isActive ? colors.primary : colors.textMedium} />}
+                  {tag === 'Morning' && <SunIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
+                  {tag === 'Evening' && <MoonIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
+                  {tag === 'After Medication' && <ShieldIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
+                  {tag === 'After Exercise' && <HeartPulseIcon size={14} color={isActive ? colors.onPrimaryContainer : colors.onSurfaceVariant} />}
                   <Text style={[styles.tagText, isActive && styles.tagTextActive, (tag === 'Morning' || tag === 'Evening' || tag === 'After Medication' || tag === 'After Exercise') && { marginLeft: 6 }]}>
                     {tag}
                   </Text>
@@ -182,7 +180,7 @@ export const AddEntryScreen = () => {
         </View>
 
         <View style={styles.dateTimeContainer}>
-          <Text style={styles.dateTimeLabel}>Measurement{'\n'}time</Text>
+          <Text style={styles.dateTimeLabel}>Measurement{'\n'}Time</Text>
           <View style={styles.dateTimePills}>
             <View style={styles.datePill}>
               <Text style={styles.datePillText}>{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</Text>
@@ -199,14 +197,7 @@ export const AddEntryScreen = () => {
             onPress={handleSave}
             activeOpacity={0.8}
           >
-            <LinearGradient
-              colors={[colors.gradientStart, colors.gradientEnd]}
-              style={styles.saveGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <Text style={styles.saveButtonText}>Save Reading</Text>
-            </LinearGradient>
+            <Text style={styles.saveButtonText}>Save Reading</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -217,40 +208,39 @@ export const AddEntryScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.cardWarm,
+    backgroundColor: colors.surfaceContainerLowest,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 56,
     paddingBottom: 24,
+    backgroundColor: colors.surfaceContainerLowest,
   },
   closeButton: {
-    width: 36,
-    height: 36,
+    width: 44,
+    height: 44,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 18,
+    backgroundColor: colors.surfaceContainer,
+    borderRadius: 22,
   },
   closeButtonText: {
-    color: colors.textMedium,
-    fontSize: 18,
+    color: colors.onSurface,
+    fontSize: 20,
     fontFamily: 'Inter_400Regular',
   },
   title: {
-    ...typography.h3,
-    color: colors.textDark,
+    ...typography.headlineMd,
+    color: colors.onSurface,
   },
   content: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceBright,
     borderTopLeftRadius: 32,
     borderTopRightRadius: 32,
     paddingTop: 40,
-    ...shadows.lg,
   },
   steppersRow: {
     flexDirection: 'row',
@@ -267,10 +257,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stepperButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(0,0,0,0.04)',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceContainerHigh,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -279,20 +269,45 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
   },
   valueContainer: {
-    paddingVertical: 12,
+    paddingVertical: 16,
     justifyContent: 'center',
   },
   valueText: {
-    fontFamily: 'Manrope_800ExtraBold',
-    fontSize: 56,
+    ...typography.displayLg,
     letterSpacing: -1.5,
   },
   labelText: {
-    ...typography.overline,
+    ...typography.labelLg,
     marginBottom: 4,
   },
   tagsContainer: {
-    marginBottom: 24,
+    marginBottom: 32,
+  },
+  tagsScroll: {
+    paddingRight: 20,
+    paddingLeft: 20,
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceContainer,
+    marginRight: 12,
+    borderWidth: 1,
+    borderColor: colors.outlineVariant,
+  },
+  tagActive: {
+    backgroundColor: colors.primaryContainer,
+    borderColor: colors.primary,
+  },
+  tagText: {
+    ...typography.labelMd,
+    color: colors.onSurfaceVariant,
+  },
+  tagTextActive: {
+    color: colors.onPrimaryContainer,
   },
   dateTimeContainer: {
     flexDirection: 'row',
@@ -302,62 +317,32 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   dateTimeLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: colors.textDark,
+    ...typography.bodyMd,
+    color: colors.onSurface,
   },
   dateTimePills: {
     flexDirection: 'row',
     gap: 8,
   },
   datePill: {
-    backgroundColor: colors.cardWarm,
+    backgroundColor: colors.surfaceContainer,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 16,
   },
   timePill: {
-    backgroundColor: colors.cardWarm,
+    backgroundColor: colors.surfaceContainer,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 16,
   },
   datePillText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: colors.textDark,
+    ...typography.labelLg,
+    color: colors.onSurface,
   },
   timePillText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: colors.textDark,
-  },
-  tagsScroll: {
-    paddingRight: 16,
-    paddingLeft: 16,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: colors.cardWarm,
-    marginRight: 12,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-  },
-  tagActive: {
-    backgroundColor: colors.primaryTint,
-    borderColor: colors.primary,
-  },
-  tagText: {
-    ...typography.bodySmall,
-    color: colors.textMedium,
-  },
-  tagTextActive: {
-    color: colors.primary,
-    fontFamily: 'Inter_600SemiBold',
+    ...typography.labelLg,
+    color: colors.onSurface,
   },
   bottomContainer: {
     flex: 1,
@@ -366,26 +351,19 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     width: '100%',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  saveGradient: {
+    backgroundColor: colors.primary,
     borderRadius: 16,
     paddingVertical: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
   saveButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
+    ...typography.headlineSm,
+    color: colors.onPrimary,
   },
   savedContainer: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceContainerLowest,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -393,24 +371,17 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: colors.primaryTint,
+    backgroundColor: colors.primaryContainer,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    shadowColor: colors.primaryGlow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 8,
   },
   checkMark: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 56,
-    color: colors.primary,
+    ...typography.displayLg,
+    color: colors.onPrimaryContainer,
   },
   savedText: {
-    ...typography.h2,
-    color: colors.textDark,
+    ...typography.headlineMd,
+    color: colors.onSurface,
   },
 });
-

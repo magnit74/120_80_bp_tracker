@@ -1,328 +1,201 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Animated, { FadeInDown, FadeIn, useSharedValue, useAnimatedStyle, withRepeat, withTiming, Easing } from 'react-native-reanimated';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import { colors } from '../theme/colors';
-import { PhoneIcon } from '../components/Icons';
+import { typography } from '../theme/typography';
+import { ShieldIcon, HeartPulseIcon } from '../components/Icons';
 
-export const OfferDetailScreen = () => {
-  const navigation = useNavigation();
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'OfferDetail'>;
+
+export default function OfferDetailScreen() {
+  const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const [spotsLeft] = useState(13);
 
-  const pulse = useSharedValue(1);
+  const handleContinue = async () => {
+    await AsyncStorage.setItem('hasViewedOffer', 'true');
+    navigation.replace('Main' as any);
+  };
 
-  useEffect(() => {
-    pulse.value = withRepeat(
-      withTiming(1.05, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-      -1,
-      true
-    );
-  }, []);
-
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulse.value }],
-  }));
-
-  const handleCall = () => {
-    Linking.openURL('tel:+18882172735');
+  const handleClose = async () => {
+    await AsyncStorage.setItem('hasViewedOffer', 'true');
+    navigation.replace('Main' as any);
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>X</Text>
-        </TouchableOpacity>
-      </View>
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}>
+        <View style={styles.imageContainer}>
+          <Image 
+            source={require('../../assets/offer_header.png')} 
+            style={styles.headerImage} 
+            resizeMode="cover" 
+          />
+          <TouchableOpacity style={[styles.closeButton, { top: insets.top + 16 }]} onPress={handleClose}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </TouchableOpacity>
+        </View>
 
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        <Animated.View entering={FadeIn.delay(100).duration(400)}>
-          <View style={styles.heroSection}>
-            <Text style={styles.heroTag}>EXCLUSIVE OFFER</Text>
-            <Text style={styles.heroTitle}>Your Blood Pressure May Qualify You for $150/Month</Text>
-            <Text style={styles.heroSubtitle}>
-              People with high blood pressure often overpay for health insurance
-              or have no coverage at all. Special plans exist that pay YOU back
-              every month. A 3-minute call can tell you if you qualify.
-            </Text>
-          </View>
-        </Animated.View>
+        <View style={styles.content}>
+          <Text style={styles.badge}>PREMIUM ACCESS</Text>
+          <Text style={styles.title}>Unlock Full Health Insights</Text>
+          <Text style={styles.description}>
+            Get personalized blood pressure analysis, unlimited history, and exportable PDF reports for your doctor.
+          </Text>
 
-        <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.divider} />
-
-        <Animated.View entering={FadeInDown.delay(250).duration(400)}>
-          <Text style={styles.sectionTitle}>WHAT YOU GET</Text>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(300).duration(400)} style={styles.statRow}>
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>$150</Text>
-            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>month cash back</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>3-5</Text>
-            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>minute call</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statBox}>
-            <Text style={styles.statNumber} numberOfLines={1} adjustsFontSizeToFit>FREE</Text>
-            <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>assessment</Text>
-          </View>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(350).duration(400)} style={styles.divider} />
-
-        <Animated.View entering={FadeInDown.delay(400).duration(400)}>
-          <Text style={styles.sectionTitle}>HOW IT WORKS</Text>
-        </Animated.View>
-
-        {[
-          { num: '1', title: 'Call for Free Assessment', desc: 'A licensed specialist reviews your profile and health needs at no cost to you.' },
-          { num: '2', title: 'Get Matched to Plans', desc: 'Receive personalized options with lower premiums and cashback benefits.' },
-          { num: '3', title: 'Start Saving', desc: 'Enroll in a plan and begin receiving monthly cash rewards.' },
-        ].map((item, index) => (
-          <Animated.View
-            key={index}
-            entering={FadeInDown.delay(450 + index * 80).duration(400)}
-            style={styles.stepCard}
-          >
-            <View style={styles.stepNumber}>
-              <Text style={styles.stepNumberText}>{item.num}</Text>
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <HeartPulseIcon size={20} color={colors.primary} />
+              </View>
+              <View style={styles.featureTextContainer}>
+                <Text style={styles.featureTitle}>Advanced Analytics</Text>
+                <Text style={styles.featureDesc}>Understand your trends</Text>
+              </View>
             </View>
-            <View style={styles.stepContent}>
-              <Text style={styles.stepTitle}>{item.title}</Text>
-              <Text style={styles.stepDesc}>{item.desc}</Text>
+            
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <ShieldIcon size={20} color={colors.primary} />
+              </View>
+              <View style={styles.featureTextContainer}>
+                <Text style={styles.featureTitle}>Secure PDF Export</Text>
+                <Text style={styles.featureDesc}>Share with your doctor</Text>
+              </View>
             </View>
-          </Animated.View>
-        ))}
-
-        <Animated.View entering={FadeInDown.delay(700).duration(400)} style={styles.urgencyBox}>
-          <Text style={styles.urgencyText}>Only {spotsLeft} of 100 spots left today. Call now to secure yours.</Text>
-        </Animated.View>
-
-        <Animated.View entering={FadeInDown.delay(750).duration(400)} style={styles.trustSection}>
-          <Text style={styles.trustText}>No spam. No selling your data. Just savings.</Text>
-        </Animated.View>
+          </View>
+        </View>
       </ScrollView>
 
-      <Animated.View entering={FadeInDown.delay(800).duration(400)} style={[styles.floatingFooter, { paddingBottom: insets.bottom + 12 }]}>
-        <Animated.View style={[styles.floatingCallButton, pulseStyle]}>
-          <TouchableOpacity style={styles.floatingButtonInner} onPress={handleCall} activeOpacity={0.8}>
-            <PhoneIcon size={22} color={colors.white} />
-            <Text style={styles.floatingButtonText}>Call Now - It's Free</Text>
-          </TouchableOpacity>
-        </Animated.View>
-        <Text style={styles.footerHint}>Mon-Fri, 9:30 AM - 7:00 PM ET</Text>
-      </Animated.View>
+      <View style={[styles.bottomContainer, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <Text style={styles.priceText}>$4.99 / week, cancel anytime</Text>
+        <TouchableOpacity style={styles.primaryButton} onPress={handleContinue} activeOpacity={0.9}>
+          <Text style={styles.primaryButtonText}>Continue</Text>
+        </TouchableOpacity>
+        <View style={styles.linksRow}>
+          <Text style={styles.linkText}>Terms</Text>
+          <Text style={styles.linkText}>Privacy</Text>
+          <Text style={styles.linkText}>Restore</Text>
+        </View>
+      </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surfaceContainerLowest,
   },
-  header: {
-    paddingHorizontal: 20,
-    paddingBottom: 8,
+  imageContainer: {
+    width: '100%',
+    height: 320,
+    backgroundColor: colors.surfaceContainer,
+    position: 'relative',
   },
-  backButton: {
-    width: 44,
-    height: 44,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.surfaceSecondary,
-    borderRadius: 22,
+  headerImage: {
+    width: '100%',
+    height: '100%',
   },
-  backButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    color: colors.textPrimary,
-  },
-  scroll: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: 24,
-    paddingBottom: 140,
-  },
-  heroSection: {
-    marginBottom: 8,
-  },
-  heroTag: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: colors.accentAmber,
-    letterSpacing: 2,
-    textTransform: 'uppercase' as const,
-    marginBottom: 12,
-  },
-  heroTitle: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 28,
-    color: colors.textPrimary,
-    lineHeight: 36,
-    letterSpacing: 0.3,
-    marginBottom: 16,
-  },
-  heroSubtitle: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 16,
-    color: colors.textSecondary,
-    lineHeight: 24,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: colors.border,
-    marginVertical: 24,
-  },
-  sectionTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 11,
-    color: colors.textTertiary,
-    letterSpacing: 1.5,
-    textTransform: 'uppercase' as const,
-    marginBottom: 16,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  statBox: {
-    alignItems: 'center',
-    flex: 1,
-  },
-  statNumber: {
-    fontFamily: 'Inter_700Bold',
-    fontSize: 36,
-    color: colors.primary,
-    marginBottom: 4,
-  },
-  statLabel: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 11,
-    color: colors.textTertiary,
-    letterSpacing: 0.5,
-  },
-  statDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: colors.border,
-  },
-  stepCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: colors.card,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.02,
-    shadowRadius: 8,
-    elevation: 1,
-  },
-  stepNumber: {
+  closeButton: {
+    position: 'absolute',
+    right: 24,
     width: 36,
     height: 36,
-    borderRadius: 12,
-    backgroundColor: colors.primary + '12',
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: colors.white,
+    fontSize: 18,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  content: {
+    padding: 24,
+  },
+  badge: {
+    ...typography.labelLg,
+    color: colors.primary,
+    letterSpacing: 1,
+    marginBottom: 12,
+  },
+  title: {
+    ...typography.headlineLg,
+    color: colors.onSurface,
+    marginBottom: 12,
+  },
+  description: {
+    ...typography.bodyLg,
+    color: colors.onSurfaceVariant,
+    marginBottom: 32,
+  },
+  featuresList: {
+    gap: 24,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primaryContainer,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
-    marginTop: 2,
   },
-  stepNumberText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 14,
-    color: colors.primary,
-  },
-  stepContent: {
+  featureTextContainer: {
     flex: 1,
   },
-  stepTitle: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginBottom: 4,
+  featureTitle: {
+    ...typography.headlineSm,
+    color: colors.onSurface,
   },
-  stepDesc: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
+  featureDesc: {
+    ...typography.bodyMd,
+    color: colors.onSurfaceVariant,
   },
-  urgencyBox: {
-    backgroundColor: colors.danger + '10',
-    borderRadius: 16,
-    padding: 16,
-    marginTop: 8,
-    borderWidth: 1,
-    borderColor: colors.danger + '20',
-  },
-  urgencyText: {
-    fontFamily: 'Inter_500Medium',
-    fontSize: 14,
-    color: colors.danger,
-    textAlign: 'center',
-  },
-  trustSection: {
-    marginTop: 16,
-    alignItems: 'center',
-  },
-  trustText: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 13,
-    color: colors.textTertiary,
-  },
-  floatingFooter: {
+  bottomContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 24,
-    paddingTop: 12,
-    backgroundColor: colors.background,
+    paddingTop: 16,
+    backgroundColor: colors.surfaceContainerLowest,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.outlineVariant,
   },
-  floatingCallButton: {
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 14,
-    elevation: 8,
-  },
-  floatingButtonInner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    borderRadius: 20,
-    paddingVertical: 18,
-    gap: 10,
-  },
-  floatingButtonText: {
-    fontFamily: 'Inter_600SemiBold',
-    fontSize: 17,
-    color: colors.white,
-    letterSpacing: 0.3,
-  },
-  footerHint: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 12,
-    color: colors.textTertiary,
+  priceText: {
+    ...typography.labelMd,
+    color: colors.onSurfaceVariant,
     textAlign: 'center',
-    marginTop: 10,
-    letterSpacing: 0.5,
+    marginBottom: 12,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: 18,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  primaryButtonText: {
+    ...typography.headlineSm,
+    color: colors.onPrimary,
+  },
+  linksRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 32,
+  },
+  linkText: {
+    ...typography.labelMd,
+    color: colors.onSurfaceVariant,
   },
 });
