@@ -5,11 +5,115 @@ import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
+import { getRecords } from '../store/storage';
 
 export default function PdfExportScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const [selectedRange, setSelectedRange] = useState<'7'|'30'|'90'|'custom'>('7');
+
+  const handleGeneratePdf = async () => {
+    try {
+      const records = await getRecords();
+      let filtered = [...records].sort((a, b) => a.timestamp - b.timestamp);
+      const now = Date.now();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      
+      if (selectedRange === '7') {
+        filtered = filtered.filter(r => r.timestamp >= now - 7 * msPerDay);
+      } else if (selectedRange === '30') {
+        filtered = filtered.filter(r => r.timestamp >= now - 30 * msPerDay);
+      } else if (selectedRange === '90') {
+        filtered = filtered.filter(r => r.timestamp >= now - 90 * msPerDay);
+      }
+      
+      if (filtered.length === 0) {
+        alert("No data available for the selected range.");
+        return;
+      }
+
+      const tableRows = filtered.map(r => {
+        const d = new Date(r.timestamp);
+        return `<tr>
+          <td>${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+          <td>${r.systolic}/${r.diastolic}</td>
+          <td>${r.pulse}</td>
+        </tr>`;
+      }).join('');
+
+      const chartLabels = JSON.stringify(filtered.map(r => {
+        const d = new Date(r.timestamp);
+        return d.toLocaleDateString();
+      }));
+      const chartSys = JSON.stringify(filtered.map(r => r.systolic));
+      const chartDia = JSON.stringify(filtered.map(r => r.diastolic));
+
+      const html = `
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; color: #333; }
+            h1 { color: #97202B; text-align: center; }
+            .chart-container { width: 100%; height: 300px; margin-bottom: 30px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
+            th { background-color: #F4F7FA; color: #111827; }
+          </style>
+        </head>
+        <body>
+          <h1>Blood Pressure Report</h1>
+          <div class="chart-container">
+            <canvas id="myChart"></canvas>
+          </div>
+          <table>
+            <tr>
+              <th>Date & Time</th>
+              <th>BP (mmHg)</th>
+              <th>Pulse (bpm)</th>
+            </tr>
+            ${tableRows}
+          </table>
+          <script>
+            const ctx = document.getElementById('myChart');
+            new Chart(ctx, {
+              type: 'line',
+              data: {
+                labels: ${chartLabels},
+                datasets: [
+                  {
+                    label: 'Systolic',
+                    data: ${chartSys},
+                    borderColor: '#DC2626',
+                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
+                    tension: 0.3
+                  },
+                  {
+                    label: 'Diastolic',
+                    data: ${chartDia},
+                    borderColor: '#2563EB',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    tension: 0.3
+                  }
+                ]
+              },
+              options: { responsive: true, maintainAspectRatio: false }
+            });
+          </script>
+        </body>
+      </html>
+      `;
+
+      const { uri } = await Print.printToFileAsync({ html });
+      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+    } catch (e) {
+      console.error(e);
+      alert("Failed to generate PDF.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -66,7 +170,7 @@ export default function PdfExportScreen() {
       </View>
 
       <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <TouchableOpacity style={styles.buttonWrapper} activeOpacity={0.9}>
+        <TouchableOpacity style={styles.buttonWrapper} activeOpacity={0.9} onPress={handleGeneratePdf}>
           <LinearGradient
             colors={['#6bd173', '#43a047']}
             start={{ x: 0, y: 0 }}

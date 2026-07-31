@@ -9,6 +9,7 @@ import { colors } from '../theme/colors';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
+import { Swipeable } from 'react-native-gesture-handler';
 
 import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
 import { shouldShowReviewPrompt, handlePositiveReview } from '../services/reviewService';
@@ -57,6 +58,17 @@ export const HomeScreen = () => {
       { text: "Cancel", style: "cancel" },
       { text: "Delete", style: "destructive", onPress: async () => { await deleteRecord(id); await loadRecords(); } }
     ]);
+  };
+
+  const renderRightActions = (id: string) => {
+    return (
+      <TouchableOpacity 
+        style={styles.deleteAction} 
+        onPress={() => handleDeleteRecord(id)}
+      >
+        <MaterialIcons name="delete" size={24} color="#FFF" />
+      </TouchableOpacity>
+    );
   };
 
   const latestRecord = records.length > 0 ? records[0] : null;
@@ -156,24 +168,29 @@ export const HomeScreen = () => {
                 const recCategory = getCategoryColor(record.systolic);
                 const isNormal = record.systolic < 120;
                 return (
-                  <TouchableOpacity 
-                    key={record.id} 
-                    onLongPress={() => handleDeleteRecord(record.id)}
-                    style={[styles.historyRow, isLast && styles.historyRowLast]}
+                  <Swipeable
+                    key={record.id}
+                    renderRightActions={() => renderRightActions(record.id)}
+                    friction={2}
                   >
-                    <Text style={styles.historyTime}>{formatShortTime(record.timestamp)}</Text>
-                    <View style={styles.historyValues}>
-                      <Text style={styles.historyBp}>{record.systolic}/{record.diastolic}</Text>
-                      <View style={[styles.historyIconPill, { backgroundColor: recCategory.bg }]}>
-                        <MaterialIcons 
-                          name={isNormal ? "check" : "remove"} 
-                          size={12} 
-                          color={recCategory.text} 
-                          style={{ fontWeight: 'bold' }}
-                        />
+                    <View style={[styles.historyRow, isLast && styles.historyRowLast]}>
+                      <Text style={styles.historyTime}>{formatShortTime(record.timestamp)}</Text>
+                      <View style={styles.historyValues}>
+                        <Text style={styles.historyBp}>{record.systolic}/{record.diastolic}</Text>
+                        <View style={[styles.historyIconPill, { backgroundColor: recCategory.bg }]}>
+                          <MaterialIcons 
+                            name={isNormal ? "check" : "remove"} 
+                            size={12} 
+                            color={recCategory.text} 
+                            style={{ fontWeight: 'bold' }}
+                          />
+                        </View>
+                        <TouchableOpacity onPress={() => handleDeleteRecord(record.id)} style={{ paddingLeft: 8 }}>
+                          <MaterialIcons name="more-vert" size={20} color="#9CA3AF" />
+                        </TouchableOpacity>
                       </View>
                     </View>
-                  </TouchableOpacity>
+                  </Swipeable>
                 );
               })
             ) : (
@@ -399,5 +416,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_500Medium',
     textAlign: 'center',
     paddingVertical: 8,
+  },
+  deleteAction: {
+    backgroundColor: colors.design2.redAction,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 64,
+    height: '100%',
   }
 });

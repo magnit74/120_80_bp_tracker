@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Linking } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -8,6 +8,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 export default function OfferPrelandScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+
+  const handleCall = () => {
+    Linking.openURL('tel:+18001234567');
+  };
 
   return (
     <View style={styles.container}>
@@ -130,7 +134,7 @@ export default function OfferPrelandScreen() {
           </View>
         </View>
         
-        <TouchableOpacity style={styles.callButtonWrapper} activeOpacity={0.9}>
+        <TouchableOpacity style={styles.callButtonWrapper} activeOpacity={0.9} onPress={handleCall}>
           <View style={styles.callButton}>
             <MaterialIcons name="phone-in-talk" size={22} color="#FFF" />
             <Text style={styles.callButtonText}>Call Now to Claim</Text>

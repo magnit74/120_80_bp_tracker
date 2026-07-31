@@ -17,6 +17,9 @@ export default function PushPermissionScreen() {
   const insets = useSafeAreaInsets();
   const [isRequesting, setIsRequesting] = useState(false);
 
+  const [morningEnabled, setMorningEnabled] = useState(true);
+  const [eveningEnabled, setEveningEnabled] = useState(true);
+
   const handleAllow = async () => {
     setIsRequesting(true);
     try {
@@ -26,10 +29,17 @@ export default function PushPermissionScreen() {
       
       if (granted) {
         await AsyncStorage.setItem('notificationsEnabled', 'true');
-        // Default reminders if granted
-        const morningTime = new Date(); morningTime.setHours(9,0,0,0);
-        await AsyncStorage.setItem('morningTime', morningTime.toISOString());
-        await scheduleDailyReminder(morningTime, 'morning_reminder', 'Time for a check-up! 🩺', 'Good morning! Taking a quick blood pressure reading starts your day right.');
+        // Schedule based on toggle state
+        if (morningEnabled) {
+          const morningTime = new Date(); morningTime.setHours(9,0,0,0);
+          await AsyncStorage.setItem('morningTime', morningTime.toISOString());
+          await scheduleDailyReminder(morningTime, 'morning_reminder', 'Time for a check-up! 🩺', 'Good morning! Taking a quick blood pressure reading starts your day right.');
+        }
+        if (eveningEnabled) {
+          const eveningTime = new Date(); eveningTime.setHours(20,0,0,0);
+          await AsyncStorage.setItem('eveningTime', eveningTime.toISOString());
+          await scheduleDailyReminder(eveningTime, 'evening_reminder', 'Evening Check-in 🌙', 'Time for your evening blood pressure reading.');
+        }
       } else {
         await AsyncStorage.setItem('notificationsEnabled', 'false');
       }
@@ -79,9 +89,13 @@ export default function PushPermissionScreen() {
                 <Text style={styles.cardTime}>9:00 AM</Text>
               </View>
             </View>
-            <View style={styles.toggleActive}>
-              <View style={styles.toggleKnob} />
-            </View>
+            <TouchableOpacity 
+              activeOpacity={0.8} 
+              onPress={() => setMorningEnabled(!morningEnabled)}
+              style={[styles.toggleActive, !morningEnabled && styles.toggleInactive]}
+            >
+              <View style={[styles.toggleKnob, !morningEnabled && styles.toggleKnobInactive]} />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.reminderCard}>
@@ -94,9 +108,13 @@ export default function PushPermissionScreen() {
                 <Text style={styles.cardTime}>8:00 PM</Text>
               </View>
             </View>
-            <View style={styles.toggleActive}>
-              <View style={styles.toggleKnob} />
-            </View>
+            <TouchableOpacity 
+              activeOpacity={0.8} 
+              onPress={() => setEveningEnabled(!eveningEnabled)}
+              style={[styles.toggleActive, !eveningEnabled && styles.toggleInactive]}
+            >
+              <View style={[styles.toggleKnob, !eveningEnabled && styles.toggleKnobInactive]} />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -228,6 +246,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
+  toggleInactive: {
+    backgroundColor: '#D1D5DB',
+  },
   toggleKnob: {
     width: 16,
     height: 16,
@@ -239,6 +260,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 2,
+  },
+  toggleKnobInactive: {
+    alignSelf: 'flex-start',
   },
   buttonWrapper: {
     width: '100%',

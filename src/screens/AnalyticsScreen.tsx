@@ -129,6 +129,32 @@ export const AnalyticsScreen = () => {
 
   const percentages = getStatusPercentages();
 
+  const getDynamicLabels = () => {
+    const labels = [];
+    const now = Date.now();
+    const msPerDay = 24 * 60 * 60 * 1000;
+    const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    
+    if (filter === 'week') {
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(now - (3 - i) * 2 * msPerDay);
+        labels.push(`${d.getDate()} ${shortMonths[d.getMonth()]}`);
+      }
+    } else if (filter === 'month') {
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(now - (3 - i) * 10 * msPerDay);
+        labels.push(`${d.getDate()} ${shortMonths[d.getMonth()]}`);
+      }
+    } else if (filter === 'year') {
+      for (let i = 0; i < 4; i++) {
+        const d = new Date(now - (3 - i) * 121 * msPerDay);
+        labels.push(`${shortMonths[d.getMonth()]} '${d.getFullYear().toString().substring(2)}`);
+      }
+    }
+    return labels;
+  };
+  const dynamicLabels = getDynamicLabels();
+
   const handleGeneratePdf = () => {
     setExportVisible(false);
     setTimeout(() => {
@@ -213,10 +239,9 @@ export const AnalyticsScreen = () => {
               )}
             </Svg>
             <View style={styles.xLabels}>
-               <Text style={styles.xLabelText}>1 Oct</Text>
-               <Text style={styles.xLabelText}>8 Oct</Text>
-               <Text style={styles.xLabelText}>15 Oct</Text>
-               <Text style={styles.xLabelText}>22 Oct</Text>
+               {dynamicLabels.map((label, idx) => (
+                 <Text key={idx} style={styles.xLabelText}>{label}</Text>
+               ))}
             </View>
           </View>
         </Animated.View>

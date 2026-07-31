@@ -63,7 +63,7 @@ const SlideItem = ({ item, index, scrollX, insets }: { item: typeof SLIDES[0], i
       </View>
 
       {/* Text Area (Sits inside the bottom sheet) */}
-      <Animated.View style={[styles.textContainer, textStyle, { paddingBottom: insets.bottom + 80 }]}>
+      <Animated.View style={[styles.textContainer, textStyle, { paddingBottom: insets.bottom + 140 }]}>
         <Text style={styles.title}>{item.title}</Text>
         <Text style={styles.description}>{item.description}</Text>
       </Animated.View>
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.42,
+    height: height * 0.48,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
@@ -213,7 +213,7 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   textContainer: {
-    height: height * 0.42,
+    height: height * 0.48,
     paddingHorizontal: 32,
     paddingTop: 40,
     alignItems: 'center',
