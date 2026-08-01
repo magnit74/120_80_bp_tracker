@@ -312,7 +312,7 @@ export const AnalyticsScreen = () => {
 
         {/* Export Button */}
         <Animated.View entering={FadeInDown.delay(250).duration(400)} style={styles.exportSection}>
-          <TouchableOpacity activeOpacity={0.9} style={styles.exportBtnWrapper} onPress={() => navigation.navigate('PdfExport' as any)}>
+          <TouchableOpacity activeOpacity={0.9} style={styles.exportBtnWrapper} onPress={() => setExportVisible(true)}>
             <LinearGradient
               colors={['#6bd173', '#43a047']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
