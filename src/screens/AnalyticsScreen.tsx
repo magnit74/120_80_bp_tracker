@@ -10,6 +10,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { colors } from '../theme/colors';
 import { getRecords, BloodPressureRecord } from '../store/storage';
 
 const { width } = Dimensions.get('window');
