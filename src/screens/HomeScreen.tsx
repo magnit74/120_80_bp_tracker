@@ -12,7 +12,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Swipeable } from 'react-native-gesture-handler';
 
 import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
-import { shouldShowReviewPrompt, handlePositiveReview } from '../services/reviewService';
+import { shouldShowReviewPrompt, showReviewDialog } from '../services/reviewService';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -40,7 +40,7 @@ export const HomeScreen = () => {
       const data = await getRecords();
       setRecords(data);
       if (await shouldShowReviewPrompt(data.length)) {
-        setTimeout(() => handlePositiveReview(), 1500);
+        setTimeout(() => showReviewDialog(data.length), 1500);
       }
     } catch (error) {
       console.error('Load records error:', error);

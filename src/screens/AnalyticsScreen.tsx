@@ -283,19 +283,30 @@ export const AnalyticsScreen = () => {
         {/* Status Bars */}
         <Animated.View entering={FadeInDown.delay(200).duration(400)} style={styles.statusBarSection}>
           <View style={styles.statusLabels}>
-            <Text style={styles.statusLabelText}>Normal</Text>
-            <Text style={styles.statusLabelText}>Elevated</Text>
-            <Text style={styles.statusLabelText}>High</Text>
+            <View style={styles.statusLabelRow}>
+              <View style={[styles.statusDot, { backgroundColor: colors.design2.greenMain }]} />
+              <Text style={[styles.statusLabelText, { color: colors.design2.greenMain }]}>Normal</Text>
+            </View>
+            <View style={styles.statusLabelRow}>
+              <View style={[styles.statusDot, { backgroundColor: '#F5A623' }]} />
+              <Text style={[styles.statusLabelText, { color: '#F5A623' }]}>Elevated</Text>
+            </View>
+            <View style={styles.statusLabelRow}>
+              <View style={[styles.statusDot, { backgroundColor: colors.design2.redAction }]} />
+              <Text style={[styles.statusLabelText, { color: colors.design2.redAction }]}>High</Text>
+            </View>
           </View>
           <View style={styles.statusBarContainer}>
-            <View style={[styles.statusBarSegment, { backgroundColor: colors.design2.greenMain, width: `${percentages.normal}%` }]} />
-            <View style={[styles.statusBarSegment, { backgroundColor: '#F5A623', width: `${percentages.elevated}%` }]} />
-            <View style={[styles.statusBarSegment, { backgroundColor: colors.design2.redAction, width: `${percentages.high}%` }]} />
+            <View style={[styles.statusBarSegment, { backgroundColor: colors.design2.greenMain, width: `${Math.max(percentages.normal, 1)}%`, borderTopLeftRadius: 5, borderBottomLeftRadius: 5 }]} />
+            <View style={styles.statusBarDivider} />
+            <View style={[styles.statusBarSegment, { backgroundColor: '#F5A623', width: `${Math.max(percentages.elevated, 1)}%` }]} />
+            <View style={styles.statusBarDivider} />
+            <View style={[styles.statusBarSegment, { backgroundColor: colors.design2.redAction, width: `${Math.max(percentages.high, 1)}%`, borderTopRightRadius: 5, borderBottomRightRadius: 5 }]} />
           </View>
           <View style={styles.statusLabels}>
-            <Text style={styles.statusValueText}>{percentages.normal}%</Text>
-            <Text style={styles.statusValueText}>{percentages.elevated}%</Text>
-            <Text style={styles.statusValueText}>{percentages.high}%</Text>
+            <Text style={[styles.statusValueText, { color: colors.design2.greenMain }]}>{percentages.normal}%</Text>
+            <Text style={[styles.statusValueText, { color: '#F5A623' }]}>{percentages.elevated}%</Text>
+            <Text style={[styles.statusValueText, { color: colors.design2.redAction }]}>{percentages.high}%</Text>
           </View>
         </Animated.View>
 
@@ -513,26 +524,39 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: 6,
   },
+  statusLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
   statusLabelText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 11,
-    color: '#1E293B',
   },
   statusBarContainer: {
     flexDirection: 'row',
-    height: 10,
-    borderRadius: 5,
+    height: 14,
+    borderRadius: 7,
     overflow: 'hidden',
-    gap: 2,
     marginBottom: 6,
+    alignItems: 'center',
   },
   statusBarSegment: {
     height: '100%',
   },
+  statusBarDivider: {
+    width: 2,
+    height: '100%',
+    backgroundColor: '#FFFFFF',
+  },
   statusValueText: {
     fontFamily: 'Inter_700Bold',
     fontSize: 11,
-    color: colors.design2.textMuted,
   },
 
   exportSection: {

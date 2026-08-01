@@ -63,9 +63,9 @@ const SlideItem = ({ item, index, scrollX, insets }: { item: typeof SLIDES[0], i
       </View>
 
       {/* Text Area (Sits inside the bottom sheet) */}
-      <Animated.View style={[styles.textContainer, textStyle, { paddingBottom: insets.bottom + 140 }]}>
-        <Text style={styles.title}>{item.title}</Text>
-        <Text style={styles.description}>{item.description}</Text>
+      <Animated.View style={[styles.textContainer, textStyle]}>
+        <Text style={styles.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>{item.title}</Text>
+        <Text style={styles.description} numberOfLines={3}>{item.description}</Text>
       </Animated.View>
     </View>
   );
@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: height * 0.48,
+    height: height * 0.45,
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 40,
     borderTopRightRadius: 40,
@@ -198,40 +198,40 @@ const styles = StyleSheet.create({
   slide: {
     width,
     flex: 1,
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
   },
   imageContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingTop: 48,
-    paddingBottom: 32,
+    paddingBottom: 16,
   },
   image: {
-    width: 280,
-    height: 280,
+    width: 240,
+    height: 240,
     zIndex: 2,
   },
   textContainer: {
-    height: height * 0.48,
     paddingHorizontal: 32,
-    paddingTop: 40,
+    paddingTop: 32,
+    paddingBottom: 160,
     alignItems: 'center',
   },
   title: {
     fontFamily: 'Inter_800ExtraBold',
-    fontSize: 28,
+    fontSize: 24,
     color: '#111827',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 12,
     letterSpacing: -0.5,
   },
   description: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 15,
+    fontSize: 14,
     color: '#6B7280',
     textAlign: 'center',
-    lineHeight: 24,
+    lineHeight: 22,
     paddingHorizontal: 8,
   },
   bottomControls: {

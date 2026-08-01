@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -30,88 +30,91 @@ export default function PdfExportScreen() {
       }
       
       if (filtered.length === 0) {
-        alert("No data available for the selected range.");
+        Alert.alert('No Data', 'No data available for the selected range.');
         return;
       }
 
+      const avgSys = Math.round(filtered.reduce((a, r) => a + r.systolic, 0) / filtered.length);
+      const avgDia = Math.round(filtered.reduce((a, r) => a + r.diastolic, 0) / filtered.length);
+      const avgPulse = Math.round(filtered.reduce((a, r) => a + r.pulse, 0) / filtered.length);
+      const maxSys = Math.max(...filtered.map(r => r.systolic));
+      const minSys = Math.min(...filtered.map(r => r.systolic));
+      const maxDia = Math.max(...filtered.map(r => r.diastolic));
+      const minDia = Math.min(...filtered.map(r => r.diastolic));
+
       const tableRows = filtered.map(r => {
         const d = new Date(r.timestamp);
+        const dateStr = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+        const h = d.getHours(); const m = d.getMinutes().toString().padStart(2,'0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const timeStr = `${h % 12 || 12}:${m} ${ampm}`;
+        const cat = r.systolic < 120 ? '#4CAF50' : r.systolic < 130 ? '#F5A623' : '#DC2626';
         return `<tr>
-          <td>${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-          <td>${r.systolic}/${r.diastolic}</td>
+          <td>${dateStr} ${timeStr}</td>
+          <td style="font-weight:bold;">${r.systolic}/${r.diastolic}</td>
           <td>${r.pulse}</td>
+          <td><span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:${cat};"></span></td>
         </tr>`;
       }).join('');
 
-      const chartLabels = JSON.stringify(filtered.map(r => {
-        const d = new Date(r.timestamp);
-        return d.toLocaleDateString();
-      }));
-      const chartSys = JSON.stringify(filtered.map(r => r.systolic));
-      const chartDia = JSON.stringify(filtered.map(r => r.diastolic));
+      const rangeLabel = selectedRange === '7' ? 'Last 7 Days' : selectedRange === '30' ? 'Last 30 Days' : selectedRange === '90' ? 'Last 90 Days' : 'All Time';
 
       const html = `
       <html>
         <head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 20px; color: #333; }
-            h1 { color: #97202B; text-align: center; }
-            .chart-container { width: 100%; height: 300px; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 12px; text-align: center; }
-            th { background-color: #F4F7FA; color: #111827; }
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 24px; color: #333; background: #fff; }
+            .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #97202B; padding-bottom: 16px; }
+            .header h1 { color: #97202B; font-size: 22px; margin-bottom: 4px; }
+            .header p { color: #666; font-size: 12px; }
+            .stats-grid { display: flex; gap: 12px; margin-bottom: 24px; }
+            .stat-card { flex: 1; background: #F8F9FA; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #E5E7EB; }
+            .stat-value { font-size: 24px; font-weight: 900; color: #111; }
+            .stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+            .stat-range { font-size: 9px; color: #AAA; margin-top: 2px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+            th { background: #97202B; color: #fff; padding: 10px 8px; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+            td { border-bottom: 1px solid #E5E7EB; padding: 10px 8px; text-align: center; }
+            tr:nth-child(even) { background: #FAFAFA; }
+            .footer { text-align: center; margin-top: 24px; font-size: 10px; color: #AAA; border-top: 1px solid #E5E7EB; padding-top: 12px; }
           </style>
         </head>
         <body>
-          <h1>Blood Pressure Report</h1>
-          <div class="chart-container">
-            <canvas id="myChart"></canvas>
+          <div class="header">
+            <h1>Blood Pressure Report</h1>
+            <p>${rangeLabel} &bull; ${filtered.length} readings &bull; Generated ${new Date().toLocaleDateString()}</p>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">${avgSys}/${avgDia}</div>
+              <div class="stat-label">Avg BP (mmHg)</div>
+              <div class="stat-range">${minSys}-${maxSys} / ${minDia}-${maxDia}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${avgPulse}</div>
+              <div class="stat-label">Avg Pulse (bpm)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${filtered.length}</div>
+              <div class="stat-label">Total Readings</div>
+            </div>
           </div>
           <table>
-            <tr>
-              <th>Date & Time</th>
-              <th>BP (mmHg)</th>
-              <th>Pulse (bpm)</th>
-            </tr>
+            <tr><th>Date & Time</th><th>BP (mmHg)</th><th>Pulse</th><th>Status</th></tr>
             ${tableRows}
           </table>
-          <script>
-            const ctx = document.getElementById('myChart');
-            new Chart(ctx, {
-              type: 'line',
-              data: {
-                labels: ${chartLabels},
-                datasets: [
-                  {
-                    label: 'Systolic',
-                    data: ${chartSys},
-                    borderColor: '#DC2626',
-                    backgroundColor: 'rgba(220, 38, 38, 0.1)',
-                    tension: 0.3
-                  },
-                  {
-                    label: 'Diastolic',
-                    data: ${chartDia},
-                    borderColor: '#2563EB',
-                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                    tension: 0.3
-                  }
-                ]
-              },
-              options: { responsive: true, maintainAspectRatio: false }
-            });
-          </script>
+          <div class="footer">120/80 BP Tracker &bull; For informational purposes only</div>
         </body>
       </html>
       `;
 
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-    } catch (e) {
-      console.error(e);
-      alert("Failed to generate PDF.");
+    } catch (e: any) {
+      console.error('PDF generation error:', e);
+      Alert.alert('Error', 'Failed to generate PDF. Please try again.');
     }
   };
 

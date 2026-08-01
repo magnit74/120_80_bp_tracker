@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingBottom: 16,
+    flexWrap: 'nowrap',
   },
   headerBtnLeft: {
     flexDirection: 'row',
@@ -224,10 +225,11 @@ const styles = StyleSheet.create({
     padding: 8,
     width: 80,
     alignItems: 'flex-end',
+    flexShrink: 0,
   },
   headerBtnText: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 15,
+    fontSize: 14,
     color: colors.design2.redAction,
   },
   headerTitle: {
@@ -280,9 +282,9 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   dialCircleWrapper: {
-    width: 112,
-    height: 112,
-    borderRadius: 56,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
@@ -291,16 +293,17 @@ const styles = StyleSheet.create({
   dialCircleGradient: {
     width: '100%',
     height: '100%',
-    borderRadius: 56,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
   },
   dialValue: {
     fontFamily: 'Inter_900Black',
-    fontSize: 54,
+    fontSize: 40,
     color: '#FFFFFF',
-    marginTop: 4,
-    letterSpacing: -1.5,
+    textAlign: 'center',
+    includeFontPadding: false,
+    letterSpacing: -1,
   },
   dialLabel: {
     fontFamily: 'Inter_600SemiBold',

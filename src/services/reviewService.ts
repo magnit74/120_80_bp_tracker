@@ -1,55 +1,82 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform, Alert } from 'react-native';
 import * as StoreReview from 'expo-store-review';
-import * as MailComposer from 'expo-mail-composer';
+import analytics from '@react-native-firebase/analytics';
 
-const REVIEW_SHOWN_KEY = 'reviewShown';
+const LAST_REVIEW_COUNT_KEY = 'lastReviewAtCount';
 const FEEDBACK_EMAIL = 'magnitik74@gmail.com';
 
 export const shouldShowReviewPrompt = async (recordCount: number): Promise<boolean> => {
   try {
-    const shown = await AsyncStorage.getItem(REVIEW_SHOWN_KEY);
-    // if (shown === 'true') return false; // Disabled for testing
-    if (recordCount < 0) return false; // Changed to 0 for immediate testing
-    return true;
+    if (recordCount < 3) return false;
+    const lastStr = await AsyncStorage.getItem(LAST_REVIEW_COUNT_KEY);
+    const lastCount = lastStr ? parseInt(lastStr, 10) : 0;
+    return (recordCount - lastCount) >= 3;
   } catch {
     return false;
   }
 };
 
-export const handlePositiveReview = async (): Promise<void> => {
-  try {
-    await AsyncStorage.setItem(REVIEW_SHOWN_KEY, 'true');
-    const available = await StoreReview.isAvailableAsync();
-    if (available) {
-      if (Platform.OS === 'android') {
-        // Fallback for testing, since Play Store won't show it for sideloaded APKs
-        Alert.alert("Store Review", "Native prompt would appear here (if installed from Play Store).");
-      }
-      await StoreReview.requestReview();
+export const showReviewDialog = (recordCount: number): void => {
+  Alert.alert(
+    'Rate Your Experience',
+    'How would you rate 120/80 BP Tracker?',
+    [
+      { text: '⭐ 1', onPress: () => handleRating(1, recordCount) },
+      { text: '⭐ 2', onPress: () => handleRating(2, recordCount) },
+      { text: '⭐ 3', onPress: () => handleRating(3, recordCount) },
+      { text: '⭐ 4', onPress: () => handleRating(4, recordCount) },
+      { text: '⭐ 5', onPress: () => handleRating(5, recordCount) },
+    ],
+    { cancelable: true, onDismiss: () => markReviewShown(recordCount) }
+  );
+};
+
+const markReviewShown = async (recordCount: number) => {
+  await AsyncStorage.setItem(LAST_REVIEW_COUNT_KEY, recordCount.toString());
+};
+
+const handleRating = async (rating: number, recordCount: number) => {
+  await markReviewShown(recordCount);
+  
+  if (rating <= 3) {
+    // Low rating -> Firebase analytics event
+    try {
+      await analytics().logEvent('low_rating', { rating, platform: Platform.OS });
+    } catch (e) {
+      console.error('Analytics error:', e);
     }
-  } catch (error) {
-    console.error('Store review error:', error);
+    // Offer feedback
+    Alert.alert(
+      'We\'re Sorry',
+      'Would you like to tell us how we can improve?',
+      [
+        { text: 'No Thanks', style: 'cancel' },
+        { text: 'Send Feedback', onPress: () => sendFeedbackPrompt() },
+      ]
+    );
+  } else {
+    // High rating (4-5) -> native Store Review
+    try {
+      const available = await StoreReview.isAvailableAsync();
+      if (available) {
+        await StoreReview.requestReview();
+      }
+    } catch (e) {
+      console.error('Store review error:', e);
+    }
   }
 };
 
-export const handleNegativeReviewDismiss = async (): Promise<void> => {
-  await AsyncStorage.setItem(REVIEW_SHOWN_KEY, 'true');
+const sendFeedbackPrompt = () => {
+  Alert.alert(
+    'Send Feedback',
+    `Please email us at ${FEEDBACK_EMAIL} with your suggestions. We read every message!`,
+    [{ text: 'OK' }]
+  );
 };
 
-export const sendFeedback = async (message: string): Promise<boolean> => {
-  try {
-    const available = await MailComposer.isAvailableAsync();
-    if (!available) return false;
-
-    await MailComposer.composeAsync({
-      recipients: [FEEDBACK_EMAIL],
-      subject: '120/80 BP Tracker - User Feedback',
-      body: `User Feedback:\n\n${message}\n\n---\nSent from 120/80 BP Tracker ${Platform.OS === 'ios' ? 'iOS' : 'Android'} app`,
-    });
-    await AsyncStorage.setItem(REVIEW_SHOWN_KEY, 'true');
-    return true;
-  } catch {
-    return false;
-  }
-};
+// Legacy exports kept for compatibility
+export const handlePositiveReview = async (): Promise<void> => {};
+export const handleNegativeReviewDismiss = async (): Promise<void> => {};
+export const sendFeedback = async (_message: string): Promise<boolean> => false;
