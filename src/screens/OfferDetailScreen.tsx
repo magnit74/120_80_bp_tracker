@@ -43,18 +43,22 @@ export default function OfferDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 200, paddingTop: insets.top + 24 }}>
-        
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
+        <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
+          <Text style={styles.closeButtonText}>✕</Text>
+        </TouchableOpacity>
+      </View>
 
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 200, paddingTop: 16 }}>
         <View style={styles.content}>
-          <View style={styles.badgeContainer}>
-            <Text style={styles.badgeText}>LIMITED TIME OFFER</Text>
-          </View>
+          <LinearGradient 
+            colors={['#34D399', '#059669']} 
+            start={{ x: 0, y: 0 }} 
+            end={{ x: 1, y: 1 }} 
+            style={styles.badgeContainer}
+          >
+            <Text style={[styles.badgeText, { color: '#FFFFFF' }]}>LIMITED TIME OFFER</Text>
+          </LinearGradient>
           
           <Text style={styles.title}>Unlock Your Full Heart Potential</Text>
           <Text style={styles.description}>
@@ -133,13 +137,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   badgeContainer: {
-    backgroundColor: 'rgba(52, 211, 153, 0.2)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: 'rgba(52, 211, 153, 0.3)',
   },
   badgeText: {
     color: '#34D399',
