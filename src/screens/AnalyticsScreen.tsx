@@ -8,7 +8,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { MaterialIcons } from '@expo/vector-icons';
 
-import { colors } from '../theme/colors';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { getRecords, BloodPressureRecord } from '../store/storage';
 
 const { width } = Dimensions.get('window');
@@ -155,11 +156,115 @@ export const AnalyticsScreen = () => {
   };
   const dynamicLabels = getDynamicLabels();
 
-  const handleGeneratePdf = () => {
+  const handleGeneratePdf = async () => {
     setExportVisible(false);
-    setTimeout(() => {
-      Alert.alert("PDF Generated", "Your report is ready to be shared.");
-    }, 500);
+    try {
+      const records = await getRecords();
+      let filtered = [...records].sort((a, b) => a.timestamp - b.timestamp);
+      const now = Date.now();
+      const msPerDay = 24 * 60 * 60 * 1000;
+      
+      if (exportRange === '7') {
+        filtered = filtered.filter(r => r.timestamp >= now - 7 * msPerDay);
+      } else if (exportRange === '30') {
+        filtered = filtered.filter(r => r.timestamp >= now - 30 * msPerDay);
+      }
+      
+      if (filtered.length === 0) {
+        Alert.alert('No Data', 'No data available for the selected range.');
+        return;
+      }
+
+      const avgSys = Math.round(filtered.reduce((a, r) => a + r.systolic, 0) / filtered.length);
+      const avgDia = Math.round(filtered.reduce((a, r) => a + r.diastolic, 0) / filtered.length);
+      const avgPulse = Math.round(filtered.reduce((a, r) => a + r.pulse, 0) / filtered.length);
+      const maxSys = Math.max(...filtered.map(r => r.systolic));
+      const minSys = Math.min(...filtered.map(r => r.systolic));
+      const maxDia = Math.max(...filtered.map(r => r.diastolic));
+      const minDia = Math.min(...filtered.map(r => r.diastolic));
+
+      const tableRows = filtered.map(r => {
+        const d = new Date(r.timestamp);
+        const dateStr = `${d.getMonth()+1}/${d.getDate()}/${d.getFullYear()}`;
+        const h = d.getHours(); const m = d.getMinutes().toString().padStart(2,'0');
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const timeStr = `${h % 12 || 12}:${m} ${ampm}`;
+        const cat = r.systolic < 120 ? '#4CAF50' : r.systolic < 130 ? '#F5A623' : '#DC2626';
+        return `<tr>
+          <td>${dateStr} ${timeStr}</td>
+          <td style="font-weight:bold;">${r.systolic}/${r.diastolic}</td>
+          <td>${r.pulse}</td>
+          <td><span style="display:inline-block;width:10px;height:10px;border-radius:5px;background:${cat};"></span></td>
+        </tr>`;
+      }).join('');
+
+      const rangeLabel = exportRange === '7' ? 'Last 7 Days' : exportRange === '30' ? 'Last 30 Days' : 'All Time';
+
+      const html = `<!DOCTYPE html>
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 24px; color: #333; background: #fff; }
+            .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #97202B; padding-bottom: 16px; }
+            .header h1 { color: #97202B; font-size: 22px; margin-bottom: 4px; }
+            .header p { color: #666; font-size: 12px; }
+            .stats-grid { display: flex; gap: 12px; margin-bottom: 24px; }
+            .stat-card { flex: 1; background: #F8F9FA; border-radius: 12px; padding: 16px; text-align: center; border: 1px solid #E5E7EB; }
+            .stat-value { font-size: 24px; font-weight: 900; color: #111; }
+            .stat-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+            .stat-range { font-size: 9px; color: #AAA; margin-top: 2px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 12px; }
+            th { background: #97202B; color: #fff; padding: 10px 8px; text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+            td { border-bottom: 1px solid #E5E7EB; padding: 10px 8px; text-align: center; }
+            tr:nth-child(even) { background: #FAFAFA; }
+            .footer { text-align: center; margin-top: 24px; font-size: 10px; color: #AAA; border-top: 1px solid #E5E7EB; padding-top: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Blood Pressure Report</h1>
+            <p>${rangeLabel} &bull; ${filtered.length} readings &bull; Generated ${new Date().toLocaleDateString()}</p>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">${avgSys}/${avgDia}</div>
+              <div class="stat-label">Avg BP (mmHg)</div>
+              <div class="stat-range">${minSys}-${maxSys} / ${minDia}-${maxDia}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${avgPulse}</div>
+              <div class="stat-label">Avg Pulse (bpm)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${filtered.length}</div>
+              <div class="stat-label">Total Readings</div>
+            </div>
+          </div>
+          <table>
+            <tr><th>Date & Time</th><th>BP (mmHg)</th><th>Pulse</th><th>Status</th></tr>
+            ${tableRows}
+          </table>
+          <div class="footer">120/80 BP Tracker &bull; For informational purposes only</div>
+        </body>
+      </html>`;
+
+      const { uri } = await Print.printToFileAsync({ html, base64: false });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { 
+          UTI: 'com.adobe.pdf', 
+          mimeType: 'application/pdf',
+          dialogTitle: 'Share your Blood Pressure Report'
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
+    } catch (e: any) {
+      console.error('PDF generation error:', e);
+      Alert.alert('Error', 'Failed to generate PDF: ' + (e.message || 'Unknown error'));
+    }
   };
 
   return (
