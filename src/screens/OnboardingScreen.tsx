@@ -15,20 +15,20 @@ const { width, height } = Dimensions.get('window');
 const SLIDES = [
   {
     id: '1',
-    title: 'Take Control of Your Health',
-    description: 'Track blood pressure with clinical precision and get insights to manage your cardiovascular wellness effectively.',
+    title: 'TRACK YOUR HEALTH',
+    description: 'Clinical precision. Real insights.',
     image: require('../../assets/images/onboarding_1_heart.png'),
   },
   {
     id: '2',
-    title: 'Log Readings in Seconds',
-    description: 'Quick, effortless entry for busy lives so you can focus on what matters most.',
+    title: 'FAST LOGGING',
+    description: 'Effortless entry in seconds.',
     image: require('../../assets/images/onboarding_2_phone.png'),
   },
   {
     id: '3',
-    title: 'See Your Progress',
-    description: 'Beautiful charts and PDF reports you can easily share with your doctor.',
+    title: 'SHARE PROGRESS',
+    description: 'PDF reports for your doctor.',
     image: require('../../assets/images/onboarding_3_chart.png'),
   }
 ];

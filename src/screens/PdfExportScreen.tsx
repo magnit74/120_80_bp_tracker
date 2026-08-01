@@ -130,7 +130,9 @@ export default function PdfExportScreen() {
       </View>
 
       <View style={styles.imageContainer}>
-        <Image source={require('../../assets/images/pdf_document.png')} style={styles.image} resizeMode="contain" />
+        <View style={styles.iconCircle}>
+          <MaterialIcons name="picture-as-pdf" size={80} color={colors.design2.redAction} />
+        </View>
       </View>
 
       <View style={styles.textContainer}>
@@ -197,7 +199,7 @@ const styles = StyleSheet.create({
   headerTitle: { flex: 1, textAlign: 'center', fontFamily: 'Inter_800ExtraBold', fontSize: 16, color: '#111827' },
   headerRight: { width: 80 },
   imageContainer: { alignItems: 'center', justifyContent: 'center', marginTop: 8, marginBottom: 24, paddingHorizontal: 32 },
-  image: { width: 200, height: 200 },
+  iconCircle: { width: 140, height: 140, borderRadius: 70, backgroundColor: '#FFF', justifyContent: 'center', alignItems: 'center', shadowColor: colors.design2.redAction, shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.15, shadowRadius: 24, elevation: 8 },
   textContainer: { paddingHorizontal: 32, alignItems: 'center', marginBottom: 24 },
   title: { fontFamily: 'Inter_800ExtraBold', fontSize: 26, color: '#111827', textAlign: 'center', marginBottom: 12, letterSpacing: -0.5 },
   description: { fontFamily: 'Inter_500Medium', fontSize: 14, color: '#6B7280', textAlign: 'center', lineHeight: 22 },

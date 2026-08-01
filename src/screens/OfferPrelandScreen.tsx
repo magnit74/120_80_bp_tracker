@@ -10,7 +10,7 @@ export default function OfferPrelandScreen() {
   const navigation = useNavigation();
 
   const handleCall = () => {
-    Linking.openURL('tel:+18001234567');
+    Linking.openURL('tel:+18882172735');
   };
 
   return (
@@ -56,7 +56,6 @@ export default function OfferPrelandScreen() {
                   <MaterialIcons name="monetization-on" size={22} color="#1956B3" />
                 </View>
                 <Text style={styles.itemTitle}>$150/mo{'\n'}cash back</Text>
-                <Text style={styles.itemDesc}>Potential monthly compensation.</Text>
               </View>
 
               <View style={styles.gridItem}>
@@ -64,7 +63,6 @@ export default function OfferPrelandScreen() {
                   <MaterialIcons name="update" size={22} color="#1956B3" />
                 </View>
                 <Text style={styles.itemTitle}>3-5 min{'\n'}call</Text>
-                <Text style={styles.itemDesc}>Quick and easy eligibility check.</Text>
               </View>
 
               <View style={styles.gridItem}>
@@ -72,7 +70,6 @@ export default function OfferPrelandScreen() {
                   <MaterialIcons name="verified-user" size={22} color="#1956B3" />
                 </View>
                 <Text style={styles.itemTitle}>FREE{'\n'}assessment</Text>
-                <Text style={styles.itemDesc}>No obligation consultation.</Text>
               </View>
 
             </View>
