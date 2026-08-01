@@ -59,13 +59,13 @@ export default function PdfExportScreen() {
 
       const rangeLabel = selectedRange === '7' ? 'Last 7 Days' : selectedRange === '30' ? 'Last 30 Days' : selectedRange === '90' ? 'Last 90 Days' : 'All Time';
 
-      const html = `
+      const html = `<!DOCTYPE html>
       <html>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <style>
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 24px; color: #333; background: #fff; }
+            body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding: 24px; color: #333; background: #fff; }
             .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #97202B; padding-bottom: 16px; }
             .header h1 { color: #97202B; font-size: 22px; margin-bottom: 4px; }
             .header p { color: #666; font-size: 12px; }
@@ -107,14 +107,25 @@ export default function PdfExportScreen() {
           </table>
           <div class="footer">120/80 BP Tracker &bull; For informational purposes only</div>
         </body>
-      </html>
-      `;
+      </html>`;
 
-      const { uri } = await Print.printToFileAsync({ html });
-      await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+      const { uri } = await Print.printToFileAsync({ 
+        html,
+        base64: false
+      });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, { 
+          UTI: 'com.adobe.pdf', 
+          mimeType: 'application/pdf',
+          dialogTitle: 'Share your Blood Pressure Report'
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
     } catch (e: any) {
       console.error('PDF generation error:', e);
-      Alert.alert('Error', 'Failed to generate PDF. Please try again.');
+      Alert.alert('Error', 'Failed to generate PDF: ' + (e.message || 'Unknown error'));
     }
   };
 
