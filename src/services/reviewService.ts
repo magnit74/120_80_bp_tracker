@@ -20,13 +20,11 @@ export const shouldShowReviewPrompt = async (recordCount: number): Promise<boole
 export const showReviewDialog = (recordCount: number): void => {
   Alert.alert(
     'Rate Your Experience',
-    'How would you rate 120/80 BP Tracker?',
+    'Are you enjoying 120/80 BP Tracker?',
     [
-      { text: '⭐ 1', onPress: () => handleRating(1, recordCount) },
-      { text: '⭐ 2', onPress: () => handleRating(2, recordCount) },
-      { text: '⭐ 3', onPress: () => handleRating(3, recordCount) },
-      { text: '⭐ 4', onPress: () => handleRating(4, recordCount) },
-      { text: '⭐ 5', onPress: () => handleRating(5, recordCount) },
+      { text: 'Cancel', style: 'cancel', onPress: () => markReviewShown(recordCount) },
+      { text: 'Needs Work', onPress: () => handleRating(3, recordCount) },
+      { text: 'Love it! ⭐', onPress: () => handleRating(5, recordCount) },
     ],
     { cancelable: true, onDismiss: () => markReviewShown(recordCount) }
   );

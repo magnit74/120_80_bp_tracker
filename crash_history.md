@@ -8,3 +8,7 @@
    - Полностью вырезан плагин `expo-build-properties` (`useFrameworks: "static"`).
    - Восстановлена стандартная динамическая линковка Expo.
    - Восстановлены базовые Firebase плагины.
+
+4. **Сборка 54 (Codemagic API)**: Ошибка `Failed to install dependencies for pubspec file`.
+   - **Причина**: Использование ID графического воркфлоу (Flutter) при вызове API.
+   - **Решение**: Запуск воркфлоу `ios-expo-release` напрямую из `codemagic.yaml`.
