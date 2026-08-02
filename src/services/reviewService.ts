@@ -1,10 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import * as StoreReview from 'expo-store-review';
 import analytics from '@react-native-firebase/analytics';
 
 const LAST_REVIEW_COUNT_KEY = 'lastReviewAtCount';
-const FEEDBACK_EMAIL = 'magnitik74@gmail.com';
 
 export const shouldShowReviewPrompt = async (recordCount: number): Promise<boolean> => {
   try {
@@ -17,42 +16,24 @@ export const shouldShowReviewPrompt = async (recordCount: number): Promise<boole
   }
 };
 
-export const showReviewDialog = (recordCount: number): void => {
-  Alert.alert(
-    'Rate Your Experience',
-    'Are you enjoying 120/80 BP Tracker?',
-    [
-      { text: 'Cancel', style: 'cancel', onPress: () => markReviewShown(recordCount) },
-      { text: 'Needs Work', onPress: () => handleRating(3, recordCount) },
-      { text: 'Love it! ⭐', onPress: () => handleRating(5, recordCount) },
-    ],
-    { cancelable: true, onDismiss: () => markReviewShown(recordCount) }
-  );
-};
-
-const markReviewShown = async (recordCount: number) => {
+export const markReviewShown = async (recordCount: number) => {
   await AsyncStorage.setItem(LAST_REVIEW_COUNT_KEY, recordCount.toString());
 };
 
-const handleRating = async (rating: number, recordCount: number) => {
+export const submitRating = async (rating: number, recordCount: number, feedback: string) => {
   await markReviewShown(recordCount);
   
   if (rating <= 3) {
-    // Low rating -> Firebase analytics event
+    // Low rating -> Firebase analytics event with feedback
     try {
-      await analytics().logEvent('low_rating', { rating, platform: Platform.OS });
+      await analytics().logEvent('low_rating', { 
+        rating, 
+        platform: Platform.OS,
+        feedback: feedback 
+      });
     } catch (e) {
       console.error('Analytics error:', e);
     }
-    // Offer feedback
-    Alert.alert(
-      'We\'re Sorry',
-      'Would you like to tell us how we can improve?',
-      [
-        { text: 'No Thanks', style: 'cancel' },
-        { text: 'Send Feedback', onPress: () => sendFeedbackPrompt() },
-      ]
-    );
   } else {
     // High rating (4-5) -> native Store Review
     try {
@@ -66,15 +47,8 @@ const handleRating = async (rating: number, recordCount: number) => {
   }
 };
 
-const sendFeedbackPrompt = () => {
-  Alert.alert(
-    'Send Feedback',
-    `Please email us at ${FEEDBACK_EMAIL} with your suggestions. We read every message!`,
-    [{ text: 'OK' }]
-  );
-};
-
-// Legacy exports kept for compatibility
+// Legacy exports kept for compatibility just in case
 export const handlePositiveReview = async (): Promise<void> => {};
 export const handleNegativeReviewDismiss = async (): Promise<void> => {};
 export const sendFeedback = async (_message: string): Promise<boolean> => false;
+export const showReviewDialog = (recordCount: number): void => {};

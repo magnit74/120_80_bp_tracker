@@ -12,7 +12,8 @@ import Svg, { Path } from 'react-native-svg';
 import { Swipeable } from 'react-native-gesture-handler';
 
 import { getRecords, BloodPressureRecord, deleteRecord } from '../store/storage';
-import { shouldShowReviewPrompt, showReviewDialog } from '../services/reviewService';
+import { shouldShowReviewPrompt, submitRating, markReviewShown } from '../services/reviewService';
+import { RatingModal } from '../components/RatingModal';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
@@ -28,6 +29,8 @@ export const HomeScreen = () => {
   const insets = useSafeAreaInsets();
   const [records, setRecords] = useState<BloodPressureRecord[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+  const [ratingRecordCount, setRatingRecordCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
@@ -40,7 +43,8 @@ export const HomeScreen = () => {
       const data = await getRecords();
       setRecords(data);
       if (await shouldShowReviewPrompt(data.length)) {
-        setTimeout(() => showReviewDialog(data.length), 1500);
+        setRatingRecordCount(data.length);
+        setTimeout(() => setIsRatingModalVisible(true), 1500);
       }
     } catch (error) {
       console.error('Load records error:', error);
@@ -199,6 +203,19 @@ export const HomeScreen = () => {
           </View>
         </Animated.View>
       </ScrollView>
+
+      {/* Custom Rating Modal */}
+      <RatingModal
+        visible={isRatingModalVisible}
+        onDismiss={() => {
+          setIsRatingModalVisible(false);
+          markReviewShown(ratingRecordCount);
+        }}
+        onSubmit={async (rating, feedback) => {
+          setIsRatingModalVisible(false);
+          await submitRating(rating, ratingRecordCount, feedback);
+        }}
+      />
     </View>
   );
 };
